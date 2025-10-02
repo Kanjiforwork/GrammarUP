@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Card } from "@/components/ui/card"
+import GoogleLoginButton from "@/components/google-login-button";
 
 
 export default function Home() {
@@ -8,9 +9,7 @@ export default function Home() {
       <div className=" flex flex-col pt-60 ">
         <h1 className="text-7xl pt-10 font-bold text-dolphin">Grammar Up</h1>
         <p className="text-xl font-semibold mt-5">Đến với Grammar Up, bạn có thể học hỏi và cải thiện ngữ pháp một cách cá nhân hoá với gia sư AI</p>
-        <button className="mt-5 px-4 py-4 w-fit text-xl bg-dolphin text-white rounded-xl hover:bg-teal-400 hover:shadow-2xl transition-all duration-400 ease-in-out">
-          BẮT ĐẦU NGAY
-        </button>
+        <GoogleLoginButton></GoogleLoginButton>
         {/* <div className="flex flex-row pt-5 gap-4">
           <Card className="p-2 w-fit " >
             <p className="text-md font-semibold text-teal-700 my-1">Học Ngữ Pháp</p>
