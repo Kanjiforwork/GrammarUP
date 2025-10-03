@@ -42,6 +42,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-dolphin: #44b6b9;
+  --color-lightdolphin: #b5ebe0;
 }
 
 :root {

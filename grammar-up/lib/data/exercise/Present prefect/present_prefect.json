@@ -1,0 +1,159 @@
+[
+  {
+    "id": "pp-q1",
+    "type": "MCQ",
+    "prompt": "Chọn câu đúng với thì hiện tại hoàn thành:",
+    "concept": "Present Perfect Simple",
+    "choices": ["I have saw that movie.", "I have seen that movie.", "I has seen that movie."],
+    "answerIndex": 1
+  },
+  {
+    "id": "pp-q2",
+    "type": "MCQ",
+    "prompt": "Đâu là cấu trúc đúng?",
+    "concept": "Present Perfect Simple",
+    "choices": ["Subject + have/has + V3", "Subject + had + V2", "Subject + is + V-ing"],
+    "answerIndex": 0
+  },
+  {
+    "id": "pp-q3",
+    "type": "MCQ",
+    "prompt": "Câu nào đúng?",
+    "concept": "Present Perfect Simple",
+    "choices": ["She have visited Paris.", "She has visited Paris.", "She has visit Paris."],
+    "answerIndex": 1
+  },
+  {
+    "id": "pp-q4",
+    "type": "MCQ",
+    "prompt": "Từ nào thường đi với Present Perfect?",
+    "concept": "Present Perfect Simple",
+    "choices": ["yesterday", "two days ago", "already"],
+    "answerIndex": 2
+  },
+  {
+    "id": "pp-q5",
+    "type": "MCQ",
+    "prompt": "Đâu là ví dụ đúng?",
+    "concept": "Present Perfect Simple",
+    "choices": ["They have finished their homework.", "They has finished their homework.", "They have finish their homework."],
+    "answerIndex": 0
+  },
+  {
+    "id": "pp-q6",
+    "type": "MCQ",
+    "prompt": "Chọn đáp án đúng:",
+    "concept": "Present Perfect Simple",
+    "choices": ["We have lived here since 2010.", "We lived here since 2010.", "We are lived here since 2010."],
+    "answerIndex": 0
+  },
+  {
+    "id": "pp-q7",
+    "type": "MCQ",
+    "prompt": "Câu nào sai?",
+    "concept": "Present Perfect Simple",
+    "choices": ["I have just eaten.", "He has just eaten.", "He have just eaten."],
+    "answerIndex": 2
+  },
+  {
+    "id": "pp-q8",
+    "type": "MCQ",
+    "prompt": "Khi nào dùng thì hiện tại hoàn thành?",
+    "concept": "Present Perfect Simple",
+    "choices": ["Hành động bắt đầu trong quá khứ, kéo dài đến hiện tại.", "Hành động đã kết thúc cụ thể ở quá khứ.", "Hành động đang xảy ra ngay lúc nói."],
+    "answerIndex": 0
+  },
+
+  {
+    "id": "pp-q9",
+    "type": "CLOZE",
+    "prompt": "Điền từ đúng:",
+    "concept": "Present Perfect Simple",
+    "template": "I {{1}} already {{2}} lunch.",
+    "answers": ["have", "eaten"]
+  },
+  {
+    "id": "pp-q10",
+    "type": "CLOZE",
+    "prompt": "Hoàn thành câu:",
+    "concept": "Present Perfect Simple",
+    "template": "She {{1}} never {{2}} sushi.",
+    "answers": ["has", "tried"]
+  },
+  {
+    "id": "pp-q11",
+    "type": "CLOZE",
+    "prompt": "Hoàn thành với since/for:",
+    "concept": "Present Perfect Simple",
+    "template": "We {{1}} lived here {{2}} 2015.",
+    "answers": ["have", "since"]
+  },
+  {
+    "id": "pp-q12",
+    "type": "CLOZE",
+    "prompt": "Điền từ:",
+    "concept": "Present Perfect Simple",
+    "template": "They {{1}} not {{2}} their homework yet.",
+    "answers": ["have", "finished"]
+  },
+  {
+    "id": "pp-q13",
+    "type": "CLOZE",
+    "prompt": "Hoàn thành:",
+    "concept": "Present Perfect Simple",
+    "template": "He {{1}} just {{2}} to the store.",
+    "answers": ["has", "gone"]
+  },
+  {
+    "id": "pp-q14",
+    "type": "CLOZE",
+    "prompt": "Điền đúng động từ:",
+    "concept": "Present Perfect Simple",
+    "template": "I {{1}} never {{2}} that song before.",
+    "answers": ["have", "heard"]
+  },
+  {
+    "id": "pp-q15",
+    "type": "CLOZE",
+    "prompt": "Hoàn thành:",
+    "concept": "Present Perfect Simple",
+    "template": "She {{1}} already {{2}} the report.",
+    "answers": ["has", "written"]
+  },
+
+  {
+    "id": "pp-q16",
+    "type": "ORDER",
+    "prompt": "Sắp xếp thành câu đúng:",
+    "concept": "Present Perfect Simple",
+    "tokens": ["They", "have", "visited", "London", "twice"]
+  },
+  {
+    "id": "pp-q17",
+    "type": "ORDER",
+    "prompt": "Sắp xếp:",
+    "concept": "Present Perfect Simple",
+    "tokens": ["I", "have", "never", "been", "to", "Japan"]
+  },
+  {
+    "id": "pp-q18",
+    "type": "ORDER",
+    "prompt": "Xếp lại cho đúng:",
+    "concept": "Present Perfect Simple",
+    "tokens": ["She", "has", "already", "finished", "her", "work"]
+  },
+  {
+    "id": "pp-q19",
+    "type": "ORDER",
+    "prompt": "Sắp xếp:",
+    "concept": "Present Perfect Simple",
+    "tokens": ["We", "have", "lived", "here", "for", "five", "years"]
+  },
+  {
+    "id": "pp-q20",
+    "type": "ORDER",
+    "prompt": "Hoàn chỉnh câu:",
+    "concept": "Present Perfect Simple",
+    "tokens": ["He", "has", "just", "arrived", "home"]
+  }
+]
