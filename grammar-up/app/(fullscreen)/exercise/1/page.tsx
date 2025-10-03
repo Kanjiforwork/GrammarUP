@@ -35,7 +35,7 @@ export default function Exercise() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
-  const [showOceanBackground, setShowOceanBackground] = useState(false)
+  const [showOceanBackground, setShowOceanBackground] = useState(true) // Default to TRUE
 
   // Shuffle questions on mount
   useEffect(() => {
@@ -45,7 +45,9 @@ export default function Exercise() {
 
   // Check ocean background setting
   useEffect(() => {
-    const oceanBgEnabled = localStorage.getItem('oceanBackground') === 'true'
+    const saved = localStorage.getItem('oceanBackground')
+    // If null (never set), default to true (enabled)
+    const oceanBgEnabled = saved === null ? true : saved === 'true'
     setShowOceanBackground(oceanBgEnabled)
   }, [])
 

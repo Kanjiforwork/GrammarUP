@@ -4,11 +4,13 @@ import { useState } from "react"
 
 export default function SettingsPage() {
   const [oceanBackground, setOceanBackground] = useState(() => {
-    // Load from localStorage
+    // Load from localStorage, default to TRUE if not set
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('oceanBackground') === 'true'
+      const saved = localStorage.getItem('oceanBackground')
+      // If null (never set), return true (default enabled)
+      return saved === null ? true : saved === 'true'
     }
-    return false
+    return true // Default to enabled
   })
 
   const handleToggleBackground = (checked: boolean) => {
