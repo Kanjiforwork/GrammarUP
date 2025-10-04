@@ -47,7 +47,7 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
   return (
     <div className="relative w-full h-full">
       {/* Main content area with padding for bottom bar */}
-      <div className="w-full h-full overflow-auto pt-25">
+      <div className="w-full h-full overflow-auto">
         <div className="w-full max-w-4xl mx-auto p-8 flex flex-col justify-center min-h-full">
           {/* Character with speech bubble containing question */}
           <div className="flex items-start gap-8 mb-12">
