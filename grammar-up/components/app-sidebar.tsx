@@ -16,27 +16,27 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Home",
+    title: "Tranh chủ",
     url: "/",
     icon: Home,
   },
   {
-    title: "Lessons",
+    title: "Học",
     url: "/lessons",
     icon: BookOpenCheck,
   },
   {
-    title: "Exercise",
+    title: "Luyện tập",
     url: "/exercise",
     icon: Dumbbell,
   },
   {
-    title: "Account",
+    title: "Tài khoản",
     url: "/account",
     icon: CircleUser,
   },
   {
-    title: "Settings",
+    title: "Cài đặt",
     url: "/settings",
     icon: Settings,
   },

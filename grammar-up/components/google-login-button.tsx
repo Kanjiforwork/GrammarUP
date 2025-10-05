@@ -1,71 +1,47 @@
 'use client'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useEffect, useState } from 'react' // ← Thêm này
-import Link from 'next/link' // ← Thêm này để tạo link
-import { User } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/lib/supabase/client'
 
-export default function GoogleLoginButton() {
-  const supabase = createClientComponentClient()
-  const [user, setUser] = useState<User | null>(null) // ← Thêm này
-  const [loading, setLoading] = useState(true) // ← Thêm này
+interface GoogleLoginButtonProps {
+  isLoggedIn?: boolean
+}
 
+export default function GoogleLoginButton({ isLoggedIn = false }: GoogleLoginButtonProps) {
   const handleGoogleLogin = async () => {
     console.log('Starting Google login...')
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google'
-        // ← Bỏ hết options, để Supabase tự handle
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+          skipBrowserRedirect: false, // Đảm bảo redirect về callback
+        }
       })
       
       if (error) {
         console.error('Login error:', error)
+      } else {
+        console.log('Redirecting to Google...', data)
       }
     } catch (error) {
       console.error('Unexpected error:', error)
     }
   }
-  // Thêm vào trong component
-useEffect(() => {
-  // Kiểm tra user hiện tại
-  const getUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    setUser(user)
-    setLoading(false)
+
+  if (isLoggedIn) {
+    return null
   }
-  
-  getUser()
-  
-  // Lắng nghe thay đổi auth state
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-    setUser(session?.user || null)
-    setLoading(false)
-  })
-  
-  return () => subscription.unsubscribe()
-}, [])
- // Thêm vào cuối component, thay return cũ
-if (loading) {
+
   return (
-    <button className="mt-5 px-4 py-4 w-fit text-xl bg-gray-300 text-gray-600 rounded-xl cursor-not-allowed">
-      Đang kiểm tra...
+    <button 
+      onClick={handleGoogleLogin} 
+      className="mt-5 px-4 py-4 w-fit text-xl bg-dolphin text-white rounded-xl hover:bg-teal-400 hover:shadow-2xl transition-all duration-400 ease-in-out"
+    >
+      BẮT ĐẦU NGAY
     </button>
   )
-}
-
-if (user) {
-  // Đã đăng nhập → hiện nút "Bắt đầu học"
-  return (
-    <Link href="/lessons" className="mt-5 px-4 py-4 w-fit text-xl bg-teal-300 text-white rounded-xl hove:bg-lightdolphin hover:shadow-2xl transition-all duration-400 ease-in-out inline-block text-center">
-      BẮT ĐẦU HỌC
-    </Link>
-  )
-}
-
-// Chưa đăng nhập → hiện nút login
-return (
-  <button onClick={handleGoogleLogin} className="mt-5 px-4 py-4 w-fit text-xl bg-dolphin text-white rounded-xl hover:bg-teal-400 hover:shadow-2xl transition-all duration-400 ease-in-out">
-    BẮT ĐẦU NGAY
-  </button>
-)
 }

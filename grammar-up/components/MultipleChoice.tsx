@@ -78,9 +78,9 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
               const isCorrect = index === answerIndex
               const showResult = hasChecked && isSelected
               
-              let borderColor = "border-gray-300"
-              let bgColor = "bg-white hover:bg-teal-50"
-              let textColor = "text-gray-800"
+              let borderColor = "border-gray-50"
+              let bgColor = "bg-gray-50 hover:bg-white-50"
+              let textColor = "text-gray-600"
               
               if (isSelected && !hasChecked) {
                 borderColor = "border-teal-400"
@@ -106,7 +106,7 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
                   disabled={hasChecked}
                   className={`w-full p-5 rounded-2xl text-left text-lg transition-all border-2 ${borderColor} ${bgColor} ${textColor} ${
                     hasChecked ? "cursor-not-allowed" : "cursor-pointer"
-                  } flex items-center gap-4 shadow-sm hover:shadow-md`}
+                  } flex items-center gap-4 shadow-md hover:shadow-xl`}
                 >
                   {/* Number badge */}
                   <div className={`flex-shrink-0 w-12 h-12 ${isSelected && !hasChecked ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600'} rounded-xl flex items-center justify-center font-bold text-lg transition-colors`}>

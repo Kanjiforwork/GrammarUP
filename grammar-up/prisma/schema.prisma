@@ -1,0 +1,198 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// ========================================
+// ENUMS
+// ========================================
+
+enum Level {
+  A1
+  A2
+  B1
+  B2
+}
+
+enum QType {
+  MCQ
+  CLOZE
+  ORDER
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+// ========================================
+// CONTENT MODELS
+// ========================================
+
+model Unit {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  sortOrder   Int      @default(0)
+
+  lessons     Lesson[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  unitId      String
+  sortOrder   Int        @default(0)
+
+  unit        Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  questions   Question[]
+  exercises   Exercise[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([unitId, sortOrder])
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  type      QType
+  prompt    String
+  concept   String
+  level     Level?
+  lessonId  String
+  explain   String?
+
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // Question type specific data stored as JSON:
+  // MCQ: { choices: string[], answerIndex: number }
+  // CLOZE: { template: string, answers: string[] }
+  // ORDER: { tokens: string[] }
+  data      Json
+
+  attempts  Attempt[]
+  exerciseQuestions ExerciseQuestion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([lessonId])
+  @@index([type])
+  @@index([level])
+  @@index([concept])
+}
+
+model Exercise {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  lessonId    String
+  sortOrder   Int      @default(0)
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  // Many-to-many relationship with questions
+  exerciseQuestions ExerciseQuestion[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([lessonId, sortOrder])
+}
+
+// Junction table for Exercise <-> Question (many-to-many)
+model ExerciseQuestion {
+  id         String   @id @default(cuid())
+  exerciseId String
+  questionId String
+  sortOrder  Int      @default(0)
+
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([exerciseId, questionId])
+  @@index([exerciseId, sortOrder])
+  @@index([questionId])
+}
+
+// ========================================
+// USER & PROGRESS MODELS
+// ========================================
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  username  String?
+  avatar    Int       @default(1) // 1-10
+  role      UserRole  @default(USER)
+
+  // Learning progress
+  streak             Int       @default(0)
+  highestStreak      Int       @default(0)
+  lastActiveDate     DateTime?
+  currentUnit        String?
+  completedLessons   String[]  @default([])
+  completedExercises String[]  @default([])
+
+  // User preferences
+  theme        Theme   @default(SYSTEM)
+  soundEnabled Boolean @default(true)
+
+  // Relationships
+  attempts  Attempt[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([email])
+  @@index([currentUnit])
+  @@index([lastActiveDate])
+}
+
+model Attempt {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+
+  // User's answer (format depends on question type):
+  // MCQ: { selectedIndex: number }
+  // CLOZE: { answers: string[] }
+  // ORDER: { tokens: string[] }
+  answer     Json
+  
+  isCorrect  Boolean
+  timeSpent  Int?     // in seconds
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([questionId])
+  @@index([userId, createdAt])
+  @@index([userId, isCorrect])
+}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-
+import { LogoutButton } from "@/components/logout-button"
 export default function SettingsPage() {
   const [oceanBackground, setOceanBackground] = useState(() => {
     // Load from localStorage, default to TRUE if not set
@@ -47,9 +47,7 @@ export default function SettingsPage() {
         {/* Logout Button */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-xl font-semibold mb-4 text-red-600">Vùng nguy hiểm</h3>
-          <button className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold">
-            Đăng xuất
-          </button>
+<LogoutButton></LogoutButton>
         </div>
       </div>
     </div>
