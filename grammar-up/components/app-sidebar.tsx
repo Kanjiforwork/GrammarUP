@@ -16,7 +16,7 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Tranh chủ",
+    title: "Trang chủ",
     url: "/",
     icon: Home,
   },
@@ -45,12 +45,16 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   return (
-    <Sidebar>
+    <Sidebar className="border-r border-gray-100 bg-white">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="mt-5 ml-3 text-3xl font-bold text-dolphin">Grammar Up</SidebarGroupLabel>
-          <SidebarGroupContent className="mt-5">
-            <SidebarMenu>
+          {/* Logo with elegant typography */}
+          <SidebarGroupLabel className="mt-8 mb-8 ml-4 text-2xl font-bold text-gray-800 tracking-tight">
+            Grammar<span className="text-teal-500">Up</span>
+          </SidebarGroupLabel>
+          
+          <SidebarGroupContent className="px-3">
+            <SidebarMenu className="space-y-1">
               {items.map((item) => {
                 const isActive = pathname === item.url
                 return (
@@ -58,14 +62,14 @@ export function AppSidebar() {
                     <SidebarMenuButton 
                       asChild 
                       size="lg" 
-                      className={`text-xl my-1 pl-5 gap-5 transition-colors ${
+                      className={`text-base font-medium py-3 px-4 rounded-xl transition-all ${
                         isActive 
-                          ? 'bg-dolphin text-white hover:bg-dolphin  hover:text-white' 
-                          : 'hover:bg-gray-100 hover:text-gray-800'
+                          ? 'bg-teal-500 text-white shadow-sm hover:bg-teal-600 hover:text-white' 
+                          : 'text-gray-700 hover:shadow-md hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
-                      <a href={item.url}>
-                        <item.icon style={{width: '30px', height: '30px'}}/>
+                      <a href={item.url} className="flex items-center gap-3">
+                        <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'}`} />
                         <span>{item.title}</span>
                       </a>
                     </SidebarMenuButton>

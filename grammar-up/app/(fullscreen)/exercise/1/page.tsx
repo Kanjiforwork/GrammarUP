@@ -8,6 +8,8 @@ import { OrderQuestion } from "@/components/OrderQuestion"
 import { OceanBackground } from "@/components/OceanBackground"
 import { useState, useEffect } from "react"
 import questionsData from "@/lib/data/exercise/Present prefect/present_prefect.json"
+import { useSound } from '@/hooks/useSound'
+
 
 type Question = {
   id: string
@@ -36,6 +38,7 @@ export default function Exercise() {
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
   const [showOceanBackground, setShowOceanBackground] = useState(true) // Default to TRUE
+  const { playSound } = useSound()
 
   // Shuffle questions on mount
   useEffect(() => {
@@ -63,8 +66,11 @@ export default function Exercise() {
     if (currentQuestionIndex < allQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
     } else {
-      // Exercise completed
-      alert(`Hoàn thành! Bạn trả lời đúng ${correctAnswers + (isCorrect ? 1 : 0)}/${allQuestions.length} câu`)
+      // Exercise completed - play finish sound
+      playSound('finish')
+      setTimeout(() => {
+        alert(`Hoàn thành! Bạn trả lời đúng ${correctAnswers + (isCorrect ? 1 : 0)}/${allQuestions.length} câu`)
+      }, 500)
     }
   }
 
@@ -73,7 +79,10 @@ export default function Exercise() {
     if (currentQuestionIndex < allQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
     } else {
-      alert(`Hoàn thành! Bạn trả lời đúng ${correctAnswers}/${allQuestions.length} câu`)
+      playSound('finish')
+      setTimeout(() => {
+        alert(`Hoàn thành! Bạn trả lời đúng ${correctAnswers}/${allQuestions.length} câu`)
+      }, 500)
     }
   }
 
@@ -126,21 +135,25 @@ export default function Exercise() {
   }
 
   return (
-    <div className={`w-full min-h-screen flex flex-col relative ${!showOceanBackground ? 'bg-white' : ''}`}>
+    <div className={`w-full min-h-screen flex flex-col relative ${!showOceanBackground ? 'bg-gray-50' : ''}`}>
       {/* Ocean Background - only show if enabled */}
       {showOceanBackground && <OceanBackground />}
       
-      {/* Top bar with HIGH TRANSPARENCY */}
-      <div className="w-full bg-white/20 border-b border-white/30 p-4 flex items-center gap-4 shadow-sm relative z-10">
-        {/* Close button */}
+      {/* Top bar - elegant style */}
+      <div className={`w-full p-4 flex items-center gap-4 shadow-sm relative z-10 ${
+        showOceanBackground 
+          ? 'bg-white/90 backdrop-blur-sm border-b border-gray-100' 
+          : 'bg-white border-b border-gray-200'
+      }`}>
+        {/* Close button - elegant circular style */}
         <Link 
           href="/exercise" 
-          className="text-teal-800 hover:text-teal-900 transition-colors"
+          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-all"
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            width="28" 
-            height="28" 
+            width="24" 
+            height="24" 
             viewBox="0 0 24 24" 
             fill="none" 
             stroke="currentColor" 
@@ -153,13 +166,13 @@ export default function Exercise() {
           </svg>
         </Link>
         
-        {/* Progress bar */}
+        {/* Progress bar - elegant with better colors */}
         <div className="flex-1 max-w-2xl mx-auto">
-          <Progress value={progress} className="h-4 bg-white/50 [&>div]:bg-teal-500" />
+          <Progress value={progress} className="h-3 bg-gray-100 [&>div]:bg-teal-500" />
         </div>
         
-        {/* Spacer */}
-        <div className="w-7"></div>
+        {/* Spacer for symmetry */}
+        <div className="w-10"></div>
       </div>
       
       {/* Main content - full height minus top bar */}

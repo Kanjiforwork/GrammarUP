@@ -2,6 +2,8 @@
 
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import { useSound } from '@/hooks/useSound'
+
 
 interface MultipleChoiceProps {
   prompt: string
@@ -15,6 +17,8 @@ interface MultipleChoiceProps {
 export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip, showOceanBackground = true }: MultipleChoiceProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [hasChecked, setHasChecked] = useState(false)
+  const { playSound } = useSound()
+
 
   // Reset state when question changes
   useEffect(() => {
@@ -31,8 +35,10 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
     if (selectedIndex === null) return
     
     if (!hasChecked) {
-      // First click - Check answer
+      // First click - Check answer and play sound
       setHasChecked(true)
+      const isCorrect = selectedIndex === answerIndex
+      playSound(isCorrect ? 'correct' : 'incorrect')
     } else {
       // Second click - Continue to next question
       const isCorrect = selectedIndex === answerIndex
@@ -137,34 +143,30 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
         </div>
       </div>
 
-      {/* Bottom bar - style based on background */}
-      <div className={`fixed bottom-0 left-0 right-0 w-full border-t p-6 shadow-sm ${
+      {/* Bottom bar - elegant style */}
+      <div className={`fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg ${
         showOceanBackground 
-          ? 'bg-white/20 border-white/30' 
-          : 'bg-white border-gray-200'
+          ? 'bg-white/90 backdrop-blur-sm border-t border-gray-100' 
+          : 'bg-white border-t border-gray-200'
       }`}>
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          {/* Skip button with BORDER */}
+          {/* Skip button - elegant ghost style with teal hover */}
           <button
             onClick={handleSkip}
             disabled={hasChecked}
-            className={`px-6 py-3 font-semibold hover:bg-teal-50 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 ${
-              showOceanBackground
-                ? 'text-teal-800 border-teal-600/50 hover:border-teal-700'
-                : 'text-teal-700 border-teal-500 hover:border-teal-600'
-            }`}
+            className="px-6 py-3 font-semibold text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-xl transition-all disabled:opacity-0 disabled:cursor-not-allowed active:scale-95"
           >
             BỎ QUA
           </button>
           
-          {/* Check/Continue button with BORDER */}
+          {/* Check/Continue button - elegant teal with subtle shadow */}
           <button
             onClick={handleCheck}
             disabled={selectedIndex === null}
-            className={`px-8 py-3 rounded-xl font-bold text-lg transition-all border-2 ${
+            className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
               selectedIndex === null
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-400"
-                : "bg-teal-500 text-white hover:bg-teal-600 shadow-lg hover:shadow-xl border-teal-600 hover:border-teal-700"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md active:scale-[0.98]"
             }`}
           >
             {hasChecked ? "TIẾP TỤC" : "KIỂM TRA"}

@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <section className="min-h-dvh w-full flex flex-col lg:flex-row px-8 lg:px-20">
       <div className=" flex flex-col pt-60 ">
-        <h1 className="text-7xl pt-10 font-bold text-dolphin">Grammar Up</h1>
+        <h1 className="text-7xl pt-10 font-bold">Grammar<span className="text-teal-500">Up</span></h1>
         
         {user ? (
           <p className="text-xl font-semibold mt-5">

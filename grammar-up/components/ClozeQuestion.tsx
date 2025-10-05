@@ -2,6 +2,8 @@
 
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import { useSound } from '@/hooks/useSound'
+
 
 interface ClozeQuestionProps {
   prompt: string
@@ -15,6 +17,8 @@ interface ClozeQuestionProps {
 export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip, showOceanBackground = true }: ClozeQuestionProps) {
   const [userAnswers, setUserAnswers] = useState<string[]>(Array(answers.length).fill(''))
   const [hasChecked, setHasChecked] = useState(false)
+  const { playSound } = useSound()
+
 
   // Reset state when question changes
   useEffect(() => {
@@ -34,8 +38,14 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip, sho
     if (!allFilled) return
     
     if (!hasChecked) {
+      // First click - Check answer and play sound
       setHasChecked(true)
+      const isCorrect = userAnswers.every((ans, idx) => 
+        ans.trim().toLowerCase() === answers[idx].trim().toLowerCase()
+      )
+      playSound(isCorrect ? 'correct' : 'incorrect')
     } else {
+      // Second click - Continue to next question
       const isCorrect = userAnswers.every((ans, idx) => 
         ans.trim().toLowerCase() === answers[idx].trim().toLowerCase()
       )
@@ -67,12 +77,12 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip, sho
                 value={userAnswers[inputIndex]}
                 onChange={(e) => handleInputChange(inputIndex, e.target.value)}
                 disabled={hasChecked}
-                className={`px-4 py-2 border-2 rounded-lg text-center min-w-[120px] transition-all ${
+                className={`px-4 py-2 border-2 rounded-xl text-center min-w-[120px] transition-all font-medium ${
                   hasChecked
                     ? isCorrect
-                      ? 'border-green-500 bg-green-50 text-green-800'
-                      : 'border-red-500 bg-red-50 text-red-800'
-                    : 'border-teal-300 focus:border-teal-500 focus:outline-none'
+                      ? 'border-green-400 bg-green-50 text-green-700'
+                      : 'border-red-400 bg-red-50 text-red-700'
+                    : 'border-gray-200 bg-white focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none'
                 }`}
                 placeholder="..."
               />
@@ -106,55 +116,51 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip, sho
             </div>
             
             {/* Speech bubble with question */}
-            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
+            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-md border-2 border-teal-200">
               <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>
           </div>
           
           {/* Template with input fields */}
-          <div className="max-w-3xl mx-auto w-full bg-white p-8 rounded-2xl shadow-lg border-2 border-teal-200">
+          <div className="max-w-3xl mx-auto w-full bg-white p-8 rounded-2xl shadow-md border border-gray-100">
             {renderTemplate()}
           </div>
 
           {/* Show correct answers after checking if wrong */}
           {hasChecked && userAnswers.some((ans, idx) => ans.trim().toLowerCase() !== answers[idx].trim().toLowerCase()) && (
-            <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
-              <p className="text-lg font-semibold text-blue-800 mb-2">Đáp án đúng:</p>
-              <p className="text-xl text-blue-900">{answers.join(', ')}</p>
+            <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
+              <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án đúng:</p>
+              <p className="text-xl text-blue-900 font-medium">{answers.join(', ')}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom bar - style based on background */}
-      <div className={`fixed bottom-0 left-0 right-0 w-full border-t p-6 shadow-sm ${
+      {/* Bottom bar - elegant style */}
+      <div className={`fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg ${
         showOceanBackground 
-          ? 'bg-white/20 border-white/30' 
-          : 'bg-white border-gray-200'
+          ? 'bg-white/90 backdrop-blur-sm border-t border-gray-100' 
+          : 'bg-white border-t border-gray-200'
       }`}>
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          {/* Skip button with BORDER */}
+          {/* Skip button - elegant ghost style with teal hover */}
           <button
             onClick={handleSkip}
             disabled={hasChecked}
-            className={`px-6 py-3 font-semibold hover:bg-teal-50 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 ${
-              showOceanBackground
-                ? 'text-teal-800 border-teal-600/50 hover:border-teal-700'
-                : 'text-teal-700 border-teal-500 hover:border-teal-600'
-            }`}
+            className="px-6 py-3 font-semibold text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-xl transition-all disabled:opacity-0 disabled:cursor-not-allowed active:scale-95"
           >
             BỎ QUA
           </button>
           
-          {/* Check/Continue button with BORDER */}
+          {/* Check/Continue button - elegant teal */}
           <button
             onClick={handleCheck}
             disabled={!allFilled}
-            className={`px-8 py-3 rounded-xl font-bold text-lg transition-all border-2 ${
+            className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
               !allFilled
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-400"
-                : "bg-teal-500 text-white hover:bg-teal-600 shadow-lg hover:shadow-xl border-teal-600 hover:border-teal-700"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md active:scale-[0.98]"
             }`}
           >
             {hasChecked ? "TIẾP TỤC" : "KIỂM TRA"}

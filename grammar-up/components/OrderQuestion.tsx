@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import { useSound } from '@/hooks/useSound'
 
 interface OrderQuestionProps {
   prompt: string
@@ -15,6 +16,9 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
   const [selectedTokens, setSelectedTokens] = useState<string[]>([])
   const [availableTokens, setAvailableTokens] = useState<string[]>([])
   const [hasChecked, setHasChecked] = useState(false)
+  const [draggedItem, setDraggedItem] = useState<{token: string, from: 'selected' | 'available', index: number} | null>(null)
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
+  const { playSound } = useSound()
 
   // Reset and shuffle tokens when question changes
   useEffect(() => {
@@ -38,12 +42,104 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
     }
   }
 
+  // Drag & Drop handlers
+  const handleDragStart = (token: string, from: 'selected' | 'available', index: number) => {
+    if (hasChecked) return
+    setDraggedItem({ token, from, index })
+  }
+
+  const handleDragOverSelected = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault()
+    if (hasChecked || !draggedItem) return
+
+    // Only update if target index actually changed
+    if (dropTargetIndex !== targetIndex) {
+      setDropTargetIndex(targetIndex)
+    }
+  }
+
+  const handleDropOnToken = (targetIndex: number) => {
+    if (hasChecked || !draggedItem) return
+
+    if (draggedItem.from === 'available') {
+      // Dragging from available to selected - insert at target position
+      const newAvailableTokens = availableTokens.filter(t => t !== draggedItem.token)
+      const newSelectedTokens = [...selectedTokens]
+      newSelectedTokens.splice(targetIndex, 0, draggedItem.token)
+      
+      setAvailableTokens(newAvailableTokens)
+      setSelectedTokens(newSelectedTokens)
+    } else if (draggedItem.from === 'selected' && draggedItem.index !== targetIndex) {
+      // Reordering within selected
+      const newTokens = [...selectedTokens]
+      const [movedToken] = newTokens.splice(draggedItem.index, 1)
+      const insertIndex = targetIndex > draggedItem.index ? targetIndex - 1 : targetIndex
+      newTokens.splice(insertIndex, 0, movedToken)
+      
+      setSelectedTokens(newTokens)
+    }
+
+    // Reset drag state immediately
+    setDraggedItem(null)
+    setDropTargetIndex(null)
+  }
+
+  const handleDragOverSelectedArea = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDropSelectedArea = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (hasChecked || !draggedItem) return
+
+    // If dragging from available and dropping in empty area or at the end
+    if (draggedItem.from === 'available') {
+      const newAvailableTokens = availableTokens.filter(t => t !== draggedItem.token)
+      const newSelectedTokens = [...selectedTokens, draggedItem.token]
+      
+      setAvailableTokens(newAvailableTokens)
+      setSelectedTokens(newSelectedTokens)
+    }
+
+    // Reset drag state
+    setDraggedItem(null)
+    setDropTargetIndex(null)
+  }
+
+  const handleDragOverAvailable = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDropAvailable = () => {
+    if (hasChecked || !draggedItem || draggedItem.from !== 'selected') return
+
+    // Move from selected back to available
+    const newSelectedTokens = selectedTokens.filter(t => t !== draggedItem.token)
+    const newAvailableTokens = [...availableTokens, draggedItem.token]
+    
+    setSelectedTokens(newSelectedTokens)
+    setAvailableTokens(newAvailableTokens)
+
+    // Reset drag state
+    setDraggedItem(null)
+    setDropTargetIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedItem(null)
+    setDropTargetIndex(null)
+  }
+
   const handleCheck = () => {
     if (selectedTokens.length !== tokens.length) return
     
     if (!hasChecked) {
+      // First click - Check answer and play sound
       setHasChecked(true)
+      const isCorrect = selectedTokens.every((token, idx) => token === tokens[idx])
+      playSound(isCorrect ? 'correct' : 'incorrect')
     } else {
+      // Second click - Continue to next question
       const isCorrect = selectedTokens.every((token, idx) => token === tokens[idx])
       onAnswer(isCorrect)
     }
@@ -82,96 +178,116 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
             </div>
           </div>
           
-          {/* Selected tokens area - answer */}
-          <div className={`max-w-3xl mx-auto w-full bg-white p-8 rounded-2xl shadow-lg border-2 transition-all ${
+          {/* Selected tokens area - answer with drag & drop */}
+          <div className={`max-w-3xl mx-auto w-full bg-white p-8 rounded-2xl shadow-md border transition-all ${
             hasChecked
               ? isCorrectOrder
-                ? 'border-green-500 bg-green-50'
-                : 'border-red-500 bg-red-50'
-              : 'border-teal-200'
+                ? 'border-green-400 bg-green-50'
+                : 'border-red-400 bg-red-50'
+              : 'border-gray-100'
           }`}>
-            <p className="text-sm font-semibold text-gray-600 mb-4">Câu trả lời của bạn:</p>
-            <div className="min-h-[80px] flex flex-wrap gap-2 items-center">
+            <p className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">
+              Câu trả lời của bạn:
+            </p>
+            <div 
+              className="min-h-[80px] flex flex-wrap gap-2 items-center"
+              onDragOver={handleDragOverSelectedArea}
+              onDrop={handleDropSelectedArea}
+            >
               {selectedTokens.length === 0 ? (
                 <p className="text-gray-400 italic">Chọn các từ bên dưới...</p>
               ) : (
-                selectedTokens.map((token, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleTokenClick(token, false)}
-                    disabled={hasChecked}
-                    className={`px-4 py-3 rounded-xl font-medium text-lg transition-all ${
-                      hasChecked
-                        ? 'cursor-not-allowed bg-gray-100 text-gray-600'
-                        : 'bg-teal-100 text-teal-800 hover:bg-teal-200 cursor-pointer'
-                    }`}
-                  >
-                    {token}
-                  </button>
-                ))
+                selectedTokens.map((token, index) => {
+                  const isDragging = draggedItem?.token === token && draggedItem?.from === 'selected'
+                  
+                  return (
+                    <div
+                      key={`${token}-${index}`}
+                      draggable={!hasChecked}
+                      onDragStart={() => handleDragStart(token, 'selected', index)}
+                      onDragOver={(e) => handleDragOverSelected(e, index)}
+                      onDrop={() => handleDropOnToken(index)}
+                      onDragEnd={handleDragEnd}
+                      onClick={() => handleTokenClick(token, false)}
+                      className={`px-5 py-3 rounded-xl font-medium text-lg transition-all shadow-sm ${
+                        hasChecked
+                          ? 'cursor-not-allowed bg-gray-50 text-gray-500 border border-gray-200'
+                          : 'bg-teal-500 text-white hover:bg-teal-600 cursor-move active:scale-95'
+                      } ${isDragging ? 'opacity-50 scale-95' : ''}`}
+                    >
+                      {token}
+                    </div>
+                  )
+                })
               )}
             </div>
           </div>
 
-          {/* Available tokens area */}
-          <div className="max-w-3xl mx-auto w-full mt-6 bg-white p-8 rounded-2xl shadow-lg border-2 border-gray-200">
-            <p className="text-sm font-semibold text-gray-600 mb-4">Chọn từ:</p>
+          {/* Available tokens area - draggable */}
+          <div 
+            className="max-w-3xl mx-auto w-full mt-6 bg-white p-8 rounded-2xl shadow-md border border-gray-100"
+            onDragOver={handleDragOverAvailable}
+            onDrop={handleDropAvailable}
+          >
+            <p className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Chọn từ:</p>
             <div className="flex flex-wrap gap-2">
-              {availableTokens.map((token, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleTokenClick(token, true)}
-                  disabled={hasChecked}
-                  className={`px-4 py-3 rounded-xl font-medium text-lg transition-all ${
-                    hasChecked
-                      ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                      : 'bg-gray-100 text-gray-800 hover:bg-teal-50 hover:text-teal-800 cursor-pointer'
-                  }`}
-                >
-                  {token}
-                </button>
-              ))}
+              {availableTokens.map((token, index) => {
+                const isDragging = draggedItem?.token === token && draggedItem?.from === 'available'
+                
+                return (
+                  <div
+                    key={index}
+                    draggable={!hasChecked}
+                    onDragStart={() => handleDragStart(token, 'available', index)}
+                    onDragEnd={handleDragEnd}
+                    onClick={() => handleTokenClick(token, true)}
+                    className={`px-5 py-3 rounded-xl font-medium text-lg transition-all shadow-sm ${
+                      hasChecked
+                        ? 'cursor-not-allowed bg-gray-50 text-gray-400 border border-gray-200'
+                        : 'bg-gray-50 text-gray-700 hover:bg-teal-50 hover:text-teal-700 hover:shadow-md cursor-move border border-gray-200 hover:border-teal-200 active:scale-95'
+                    } ${isDragging ? 'opacity-50 scale-95' : ''}`}
+                  >
+                    {token}
+                  </div>
+                )
+              })}
             </div>
           </div>
 
           {/* Show correct answer after checking if wrong */}
           {hasChecked && !isCorrectOrder && (
-            <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border-2 border-blue-200">
-              <p className="text-lg font-semibold text-blue-800 mb-2">Đáp án đúng:</p>
-              <p className="text-xl text-blue-900">{tokens.join(' ')}</p>
+            <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
+              <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án đúng:</p>
+              <p className="text-xl text-blue-900 font-medium">{tokens.join(' ')}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom bar - style based on background */}
-      <div className={`fixed bottom-0 left-0 right-0 w-full border-t p-6 shadow-sm ${
+      {/* Bottom bar - elegant style */}
+      <div className={`fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg ${
         showOceanBackground 
-          ? 'bg-white/20 border-white/30' 
-          : 'bg-white border-gray-200'
+          ? 'bg-white/90 backdrop-blur-sm border-t border-gray-100' 
+          : 'bg-white border-t border-gray-200'
       }`}>
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          {/* Skip button with BORDER */}
+          {/* Skip button - elegant ghost style with teal hover */}
           <button
             onClick={handleSkip}
             disabled={hasChecked}
-            className={`px-6 py-3 font-semibold hover:bg-teal-50 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 ${
-              showOceanBackground
-                ? 'text-teal-800 border-teal-600/50 hover:border-teal-700'
-                : 'text-teal-700 border-teal-500 hover:border-teal-600'
-            }`}
+            className="px-6 py-3 font-semibold text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-xl transition-all disabled:opacity-0 disabled:cursor-not-allowed active:scale-95"
           >
             BỎ QUA
           </button>
           
-          {/* Check/Continue button with BORDER */}
+          {/* Check/Continue button - elegant teal */}
           <button
             onClick={handleCheck}
             disabled={!allSelected}
-            className={`px-8 py-3 rounded-xl font-bold text-lg transition-all border-2 ${
+            className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
               !allSelected
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-400"
-                : "bg-teal-500 text-white hover:bg-teal-600 shadow-lg hover:shadow-xl border-teal-600 hover:border-teal-700"
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md active:scale-[0.98]"
             }`}
           >
             {hasChecked ? "TIẾP TỤC" : "KIỂM TRA"}
