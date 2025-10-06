@@ -195,7 +195,7 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
               onDrop={handleDropSelectedArea}
             >
               {selectedTokens.length === 0 ? (
-                <p className="text-gray-400 italic">Chọn các từ bên dưới...</p>
+                <p className="text-gray-400 italic"></p>
               ) : (
                 selectedTokens.map((token, index) => {
                   const isDragging = draggedItem?.token === token && draggedItem?.from === 'selected'
