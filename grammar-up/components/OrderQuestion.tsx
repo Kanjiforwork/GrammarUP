@@ -17,7 +17,7 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
   const [availableTokens, setAvailableTokens] = useState<string[]>([])
   const [hasChecked, setHasChecked] = useState(false)
   const [draggedItem, setDraggedItem] = useState<{token: string, from: 'selected' | 'available', index: number} | null>(null)
-  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
+  const [dropIndex, setDropIndex] = useState<number | null>(null)
   const { playSound } = useSound()
 
   // Reset and shuffle tokens when question changes
@@ -32,114 +32,86 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
     if (hasChecked) return
 
     if (fromAvailable) {
-      // Move from available to selected
       setAvailableTokens(availableTokens.filter(t => t !== token))
       setSelectedTokens([...selectedTokens, token])
     } else {
-      // Move from selected back to available
       setSelectedTokens(selectedTokens.filter(t => t !== token))
       setAvailableTokens([...availableTokens, token])
     }
   }
 
-  // Drag & Drop handlers
   const handleDragStart = (token: string, from: 'selected' | 'available', index: number) => {
     if (hasChecked) return
     setDraggedItem({ token, from, index })
   }
 
-  const handleDragOverSelected = (e: React.DragEvent, targetIndex: number) => {
-    e.preventDefault()
-    if (hasChecked || !draggedItem) return
-
-    // Only update if target index actually changed
-    if (dropTargetIndex !== targetIndex) {
-      setDropTargetIndex(targetIndex)
-    }
-  }
-
-  const handleDropOnToken = (targetIndex: number) => {
-    if (hasChecked || !draggedItem) return
-
-    if (draggedItem.from === 'available') {
-      // Dragging from available to selected - insert at target position
-      const newAvailableTokens = availableTokens.filter(t => t !== draggedItem.token)
-      const newSelectedTokens = [...selectedTokens]
-      newSelectedTokens.splice(targetIndex, 0, draggedItem.token)
-      
-      setAvailableTokens(newAvailableTokens)
-      setSelectedTokens(newSelectedTokens)
-    } else if (draggedItem.from === 'selected' && draggedItem.index !== targetIndex) {
-      // Reordering within selected
-      const newTokens = [...selectedTokens]
-      const [movedToken] = newTokens.splice(draggedItem.index, 1)
-      const insertIndex = targetIndex > draggedItem.index ? targetIndex - 1 : targetIndex
-      newTokens.splice(insertIndex, 0, movedToken)
-      
-      setSelectedTokens(newTokens)
-    }
-
-    // Reset drag state immediately
-    setDraggedItem(null)
-    setDropTargetIndex(null)
-  }
-
-  const handleDragOverSelectedArea = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDropSelectedArea = (e: React.DragEvent) => {
-    e.preventDefault()
-    if (hasChecked || !draggedItem) return
-
-    // If dragging from available and dropping in empty area or at the end
-    if (draggedItem.from === 'available') {
-      const newAvailableTokens = availableTokens.filter(t => t !== draggedItem.token)
-      const newSelectedTokens = [...selectedTokens, draggedItem.token]
-      
-      setAvailableTokens(newAvailableTokens)
-      setSelectedTokens(newSelectedTokens)
-    }
-
-    // Reset drag state
-    setDraggedItem(null)
-    setDropTargetIndex(null)
-  }
-
-  const handleDragOverAvailable = (e: React.DragEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDropAvailable = () => {
-    if (hasChecked || !draggedItem || draggedItem.from !== 'selected') return
-
-    // Move from selected back to available
-    const newSelectedTokens = selectedTokens.filter(t => t !== draggedItem.token)
-    const newAvailableTokens = [...availableTokens, draggedItem.token]
-    
-    setSelectedTokens(newSelectedTokens)
-    setAvailableTokens(newAvailableTokens)
-
-    // Reset drag state
-    setDraggedItem(null)
-    setDropTargetIndex(null)
-  }
-
   const handleDragEnd = () => {
     setDraggedItem(null)
-    setDropTargetIndex(null)
+    setDropIndex(null)
+  }
+
+  // Handle drag over drop zones
+  const handleDragOverDropZone = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (hasChecked || !draggedItem) return
+    setDropIndex(index)
+  }
+
+  // Handle drop on drop zone
+  const handleDropOnZone = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (hasChecked || !draggedItem) return
+
+    if (draggedItem.from === 'available') {
+      // Moving from available to selected
+      const newAvailable = availableTokens.filter(t => t !== draggedItem.token)
+      const newSelected = [...selectedTokens]
+      newSelected.splice(targetIndex, 0, draggedItem.token)
+      
+      setAvailableTokens(newAvailable)
+      setSelectedTokens(newSelected)
+    } else {
+      // Reordering within selected
+      const newSelected = [...selectedTokens]
+      const [removed] = newSelected.splice(draggedItem.index, 1)
+      
+      // Adjust target index
+      let adjustedIndex = targetIndex
+      if (targetIndex > draggedItem.index) {
+        adjustedIndex = targetIndex - 1
+      }
+      
+      newSelected.splice(adjustedIndex, 0, removed)
+      setSelectedTokens(newSelected)
+    }
+
+    setDraggedItem(null)
+    setDropIndex(null)
+  }
+
+  // Drop back to available
+  const handleDropToAvailable = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (hasChecked || !draggedItem || draggedItem.from !== 'selected') return
+
+    const newSelected = selectedTokens.filter(t => t !== draggedItem.token)
+    setSelectedTokens(newSelected)
+    setAvailableTokens([...availableTokens, draggedItem.token])
+
+    setDraggedItem(null)
+    setDropIndex(null)
   }
 
   const handleCheck = () => {
     if (selectedTokens.length !== tokens.length) return
     
     if (!hasChecked) {
-      // First click - Check answer and play sound
       setHasChecked(true)
       const isCorrect = selectedTokens.every((token, idx) => token === tokens[idx])
       playSound(isCorrect ? 'correct' : 'incorrect')
     } else {
-      // Second click - Continue to next question
       const isCorrect = selectedTokens.every((token, idx) => token === tokens[idx])
       onAnswer(isCorrect)
     }
@@ -154,12 +126,10 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
 
   return (
     <div className="relative w-full h-full">
-      {/* Main content area with padding for bottom bar */}
       <div className="w-full h-full overflow-auto pb-32">
         <div className="w-full max-w-4xl mx-auto p-8 flex flex-col justify-center min-h-full">
-          {/* Character with speech bubble containing question */}
+          {/* Character with speech bubble */}
           <div className="flex items-start gap-8 mb-12">
-            {/* Character */}
             <div className="flex-shrink-0 -ml-4">
               <Image 
                 src="/dolphin_book.png"
@@ -171,14 +141,13 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
               />
             </div>
             
-            {/* Speech bubble with question */}
             <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
               <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>
           </div>
           
-          {/* Selected tokens area - answer with drag & drop */}
+          {/* Selected tokens area */}
           <div className={`max-w-3xl mx-auto w-full bg-white p-8 rounded-2xl shadow-md border transition-all ${
             hasChecked
               ? isCorrectOrder
@@ -189,45 +158,105 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
             <p className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">
               Câu trả lời của bạn:
             </p>
-            <div 
-              className="min-h-[80px] flex flex-wrap gap-2 items-center"
-              onDragOver={handleDragOverSelectedArea}
-              onDrop={handleDropSelectedArea}
-            >
+            <div className="min-h-[80px] flex flex-wrap items-start gap-3">
               {selectedTokens.length === 0 ? (
-                <p className="text-gray-400 italic"></p>
+                <div 
+                  className="w-full h-20 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl transition-colors hover:border-teal-400 hover:bg-teal-50/30"
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    if (!hasChecked && draggedItem) setDropIndex(0)
+                  }}
+                  onDrop={(e) => handleDropOnZone(e, 0)}
+                >
+                  <p className="text-gray-400 italic">Kéo thả từ vào đây...</p>
+                </div>
               ) : (
-                selectedTokens.map((token, index) => {
-                  const isDragging = draggedItem?.token === token && draggedItem?.from === 'selected'
+                <>
+                  {selectedTokens.map((token, index) => {
+                    const isDragging = draggedItem?.token === token && draggedItem?.from === 'selected'
+                    const showDropBefore = dropIndex === index && draggedItem && !isDragging
+                    
+                    return (
+                      <div key={`${token}-${index}`} className="flex items-center" style={{ gap: '12px' }}>
+                        {/* Drop zone BEFORE this token */}
+                        {showDropBefore && (
+                          <div
+                            onDragOver={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                            }}
+                            onDrop={(e) => handleDropOnZone(e, index)}
+                            className="h-14 bg-teal-50 border-2 border-dashed border-teal-400 rounded-xl flex items-center justify-center"
+                            style={{ width: '80px', minWidth: '80px' }}
+                          >
+                            <svg className="w-6 h-6 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                          </div>
+                        )}
+                        
+                        {/* Token */}
+                        <div
+                          draggable={!hasChecked}
+                          onDragStart={() => handleDragStart(token, 'selected', index)}
+                          onDragEnter={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            if (!hasChecked && draggedItem && !isDragging) {
+                              setDropIndex(index)
+                            }
+                          }}
+                          onDragEnd={handleDragEnd}
+                          onClick={() => handleTokenClick(token, false)}
+                          className={`px-5 py-3 rounded-xl font-medium text-lg shadow-sm transition-all ${
+                            hasChecked
+                              ? 'cursor-not-allowed bg-gray-50 text-gray-500 border border-gray-200'
+                              : 'bg-teal-500 text-white hover:bg-teal-600 cursor-move hover:shadow-md'
+                          } ${isDragging ? 'opacity-30 scale-95' : 'opacity-100 scale-100'}`}
+                        >
+                          {token}
+                        </div>
+                      </div>
+                    )
+                  })}
                   
-                  return (
+                  {/* Drop zone at the END - always visible when dragging */}
+                  {draggedItem && (
                     <div
-                      key={`${token}-${index}`}
-                      draggable={!hasChecked}
-                      onDragStart={() => handleDragStart(token, 'selected', index)}
-                      onDragOver={(e) => handleDragOverSelected(e, index)}
-                      onDrop={() => handleDropOnToken(index)}
-                      onDragEnd={handleDragEnd}
-                      onClick={() => handleTokenClick(token, false)}
-                      className={`px-5 py-3 rounded-xl font-medium text-lg transition-all shadow-sm ${
-                        hasChecked
-                          ? 'cursor-not-allowed bg-gray-50 text-gray-500 border border-gray-200'
-                          : 'bg-teal-500 text-white hover:bg-teal-600 cursor-move active:scale-95'
-                      } ${isDragging ? 'opacity-50 scale-95' : ''}`}
+                      onDragEnter={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (!hasChecked) {
+                          setDropIndex(selectedTokens.length)
+                        }
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                      onDrop={(e) => handleDropOnZone(e, selectedTokens.length)}
+                      className={`h-14 border-2 border-dashed rounded-xl flex items-center justify-center transition-all ${
+                        dropIndex === selectedTokens.length 
+                          ? 'bg-teal-50 border-teal-400 w-20' 
+                          : 'bg-gray-50 border-gray-300 w-16 opacity-50'
+                      }`}
+                      style={{ minWidth: dropIndex === selectedTokens.length ? '80px' : '64px' }}
                     >
-                      {token}
+                      <svg className={`w-6 h-6 transition-colors ${dropIndex === selectedTokens.length ? 'text-teal-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
                     </div>
-                  )
-                })
+                  )}
+                </>
               )}
             </div>
           </div>
 
-          {/* Available tokens area - draggable */}
+          {/* Available tokens area */}
           <div 
             className="max-w-3xl mx-auto w-full mt-6 bg-white p-8 rounded-2xl shadow-md border border-gray-100"
-            onDragOver={handleDragOverAvailable}
-            onDrop={handleDropAvailable}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDropToAvailable}
           >
             <p className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Chọn từ:</p>
             <div className="flex flex-wrap gap-2">
@@ -244,8 +273,8 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
                     className={`px-5 py-3 rounded-xl font-medium text-lg transition-all shadow-sm ${
                       hasChecked
                         ? 'cursor-not-allowed bg-gray-50 text-gray-400 border border-gray-200'
-                        : 'bg-gray-50 text-gray-700 hover:bg-teal-50 hover:text-teal-700 hover:shadow-md cursor-move border border-gray-200 hover:border-teal-200 active:scale-95'
-                    } ${isDragging ? 'opacity-50 scale-95' : ''}`}
+                        : 'bg-gray-50 text-gray-700 hover:bg-teal-50 hover:text-teal-700 hover:shadow-md cursor-move border border-gray-200 hover:border-teal-200'
+                    } ${isDragging ? 'opacity-30' : 'opacity-100'}`}
                   >
                     {token}
                   </div>
@@ -254,7 +283,7 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
             </div>
           </div>
 
-          {/* Show correct answer after checking if wrong */}
+          {/* Show correct answer if wrong */}
           {hasChecked && !isCorrectOrder && (
             <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
               <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án đúng:</p>
@@ -264,14 +293,13 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
         </div>
       </div>
 
-      {/* Bottom bar - elegant style */}
+      {/* Bottom bar */}
       <div className={`fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg ${
         showOceanBackground 
           ? 'bg-white/90 backdrop-blur-sm border-t border-gray-100' 
           : 'bg-white border-t border-gray-200'
       }`}>
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          {/* Skip button - elegant ghost style with teal hover */}
           <button
             onClick={handleSkip}
             disabled={hasChecked}
@@ -280,7 +308,6 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
             BỎ QUA
           </button>
           
-          {/* Check/Continue button - elegant teal */}
           <button
             onClick={handleCheck}
             disabled={!allSelected}
