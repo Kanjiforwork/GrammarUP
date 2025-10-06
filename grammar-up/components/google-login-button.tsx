@@ -39,7 +39,7 @@ export default function GoogleLoginButton({ isLoggedIn = false }: GoogleLoginBut
   return (
     <button 
       onClick={handleGoogleLogin} 
-      className="mt-5 px-4 py-4 w-fit text-xl bg-dolphin text-white rounded-xl hover:bg-teal-400 hover:shadow-2xl transition-all duration-400 ease-in-out"
+      className="mt-5 px-4 py-4 w-fit text-xl bg-teal-500 text-white rounded-xl hover:bg-teal-400 hover:shadow-2xl transition-all duration-400 ease-in-out"
     >
       BẮT ĐẦU NGAY
     </button>

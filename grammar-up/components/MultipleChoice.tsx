@@ -3,7 +3,7 @@
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useSound } from '@/hooks/useSound'
-
+import { AIFeedback } from './ai-feedback'
 
 interface MultipleChoiceProps {
   prompt: string
@@ -11,20 +11,19 @@ interface MultipleChoiceProps {
   answerIndex: number
   onAnswer: (isCorrect: boolean) => void
   onSkip: () => void
-  showOceanBackground?: boolean
 }
 
-export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip, showOceanBackground = true }: MultipleChoiceProps) {
+export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip }: MultipleChoiceProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [hasChecked, setHasChecked] = useState(false)
+  const [aiTutorLoading, setAiTutorLoading] = useState(false)
   const { playSound } = useSound()
-
 
   // Reset state when question changes
   useEffect(() => {
     setSelectedIndex(null)
     setHasChecked(false)
-  }, [prompt]) // Reset khi prompt thay đổi
+  }, [prompt])
 
   const handleSelect = (index: number) => {
     if (hasChecked) return
@@ -53,7 +52,7 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
   return (
     <div className="relative w-full h-full">
       {/* Main content area with padding for bottom bar */}
-      <div className="w-full h-full overflow-auto">
+      <div className="w-full h-full overflow-auto pb-32">
         <div className="w-full max-w-4xl mx-auto p-8 flex flex-col justify-center min-h-full">
           {/* Character with speech bubble containing question */}
           <div className="flex items-start gap-8 mb-12">
@@ -140,17 +139,26 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
               )
             })}
           </div>
+
+          {/* AI Feedback - chỉ hiện khi đã check và trả lời sai */}
+          {hasChecked && selectedIndex !== null && selectedIndex !== answerIndex && (
+            <div className="max-w-2xl mx-auto w-full mt-6">
+              <AIFeedback
+                question={prompt}
+                userAnswer={choices[selectedIndex]}
+                correctAnswer={choices[answerIndex]}
+                questionType="multiple-choice"
+                show={true}
+                onLoadingChange={setAiTutorLoading}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Bottom bar - elegant style */}
-      <div className={`fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg ${
-        showOceanBackground 
-          ? 'bg-white/90 backdrop-blur-sm border-t border-gray-100' 
-          : 'bg-white border-t border-gray-200'
-      }`}>
+      {/* Bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          {/* Skip button - elegant ghost style with teal hover */}
           <button
             onClick={handleSkip}
             disabled={hasChecked}
@@ -159,12 +167,11 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip,
             BỎ QUA
           </button>
           
-          {/* Check/Continue button - elegant teal with subtle shadow */}
           <button
             onClick={handleCheck}
-            disabled={selectedIndex === null}
+            disabled={selectedIndex === null || (hasChecked && aiTutorLoading)}
             className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
-              selectedIndex === null
+              selectedIndex === null || (hasChecked && aiTutorLoading)
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md active:scale-[0.98]"
             }`}

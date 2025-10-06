@@ -5,7 +5,6 @@ import { Progress } from "@/components/ui/progress"
 import { MultipleChoice } from "@/components/MultipleChoice"
 import { ClozeQuestion } from "@/components/ClozeQuestion"
 import { OrderQuestion } from "@/components/OrderQuestion"
-import { OceanBackground } from "@/components/OceanBackground"
 import { useState, useEffect } from "react"
 import questionsData from "@/lib/data/exercise/Present prefect/present_prefect.json"
 import { useSound } from '@/hooks/useSound'
@@ -37,21 +36,12 @@ export default function Exercise() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
-  const [showOceanBackground, setShowOceanBackground] = useState(true) // Default to TRUE
   const { playSound } = useSound()
 
   // Shuffle questions on mount
   useEffect(() => {
     const shuffled = shuffleArray(questionsData as Question[])
     setAllQuestions(shuffled)
-  }, [])
-
-  // Check ocean background setting
-  useEffect(() => {
-    const saved = localStorage.getItem('oceanBackground')
-    // If null (never set), default to true (enabled)
-    const oceanBgEnabled = saved === null ? true : saved === 'true'
-    setShowOceanBackground(oceanBgEnabled)
   }, [])
 
   const currentQuestion = allQuestions[currentQuestionIndex]
@@ -100,7 +90,6 @@ export default function Exercise() {
             answerIndex={currentQuestion.answerIndex!}
             onAnswer={handleAnswer}
             onSkip={handleSkip}
-            showOceanBackground={showOceanBackground}
           />
         )
       
@@ -113,7 +102,6 @@ export default function Exercise() {
             answers={currentQuestion.answers!}
             onAnswer={handleAnswer}
             onSkip={handleSkip}
-            showOceanBackground={showOceanBackground}
           />
         )
       
@@ -125,7 +113,6 @@ export default function Exercise() {
             tokens={currentQuestion.tokens!}
             onAnswer={handleAnswer}
             onSkip={handleSkip}
-            showOceanBackground={showOceanBackground}
           />
         )
       
@@ -135,16 +122,9 @@ export default function Exercise() {
   }
 
   return (
-    <div className={`w-full min-h-screen flex flex-col relative ${!showOceanBackground ? 'bg-gray-50' : ''}`}>
-      {/* Ocean Background - only show if enabled */}
-      {showOceanBackground && <OceanBackground />}
-      
+    <div className="w-full min-h-screen flex flex-col relative bg-gray-50">
       {/* Top bar - elegant style */}
-      <div className={`w-full p-4 flex items-center gap-4 shadow-sm relative z-10 ${
-        showOceanBackground 
-          ? 'bg-white/90 backdrop-blur-sm border-b border-gray-100' 
-          : 'bg-white border-b border-gray-200'
-      }`}>
+      <div className="w-full p-4 flex items-center gap-4 shadow-sm relative z-10 bg-white border-b border-gray-200">
         {/* Close button - elegant circular style */}
         <Link 
           href="/exercise" 

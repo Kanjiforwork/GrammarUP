@@ -1,4 +1,29 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+
 export default function AccountPage() {
+  const [userEmail, setUserEmail] = useState<string>('')
+  const [userName, setUserName] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadUser() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        setUserEmail(user.email || '')
+        setUserName(user.user_metadata?.name || user.user_metadata?.full_name || '')
+      }
+      
+      setIsLoading(false)
+    }
+    
+    loadUser()
+  }, [])
+
   return (
     <div className="w-full min-h-screen p-8">
       <h1 className="text-4xl font-bold text-gray-800 mb-4">Account</h1>
@@ -10,11 +35,15 @@ export default function AccountPage() {
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-gray-600">Email</label>
-              <p className="text-lg">user@example.com</p>
+              <p className="text-lg text-gray-800">
+                {isLoading ? '' : (userEmail || 'Chưa có thông tin')}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Tên</label>
-              <p className="text-lg">Người dùng</p>
+              <p className="text-lg text-gray-800">
+                {isLoading ? '' : (userName || 'Chưa có thông tin')}
+              </p>
             </div>
           </div>
         </div>

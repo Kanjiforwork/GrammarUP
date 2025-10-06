@@ -3,21 +3,22 @@
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { useSound } from '@/hooks/useSound'
+import { AIFeedback } from './ai-feedback'
 
 interface OrderQuestionProps {
   prompt: string
   tokens: string[]
   onAnswer: (isCorrect: boolean) => void
   onSkip: () => void
-  showOceanBackground?: boolean
 }
 
-export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackground = true }: OrderQuestionProps) {
+export function OrderQuestion({ prompt, tokens, onAnswer, onSkip }: OrderQuestionProps) {
   const [selectedTokens, setSelectedTokens] = useState<string[]>([])
   const [availableTokens, setAvailableTokens] = useState<string[]>([])
   const [hasChecked, setHasChecked] = useState(false)
   const [draggedItem, setDraggedItem] = useState<{token: string, from: 'selected' | 'available', index: number} | null>(null)
   const [dropIndex, setDropIndex] = useState<number | null>(null)
+  const [aiTutorLoading, setAiTutorLoading] = useState(false)
   const { playSound } = useSound()
 
   // Reset and shuffle tokens when question changes
@@ -285,20 +286,30 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
 
           {/* Show correct answer if wrong */}
           {hasChecked && !isCorrectOrder && (
-            <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
-              <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án đúng:</p>
-              <p className="text-xl text-blue-900 font-medium">{tokens.join(' ')}</p>
-            </div>
+            <>
+              <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
+                <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án đúng:</p>
+                <p className="text-xl text-blue-900 font-medium">{tokens.join(' ')}</p>
+              </div>
+              
+              {/* AI Feedback */}
+              <div className="max-w-3xl mx-auto w-full">
+                <AIFeedback
+                  question={prompt}
+                  userAnswer={selectedTokens.join(' ')}
+                  correctAnswer={tokens.join(' ')}
+                  questionType="order"
+                  show={true}
+                  onLoadingChange={setAiTutorLoading}
+                />
+              </div>
+            </>
           )}
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className={`fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg ${
-        showOceanBackground 
-          ? 'bg-white/90 backdrop-blur-sm border-t border-gray-100' 
-          : 'bg-white border-t border-gray-200'
-      }`}>
+      <div className="fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           <button
             onClick={handleSkip}
@@ -310,9 +321,9 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip, showOceanBackg
           
           <button
             onClick={handleCheck}
-            disabled={!allSelected}
+            disabled={!allSelected || (hasChecked && aiTutorLoading)}
             className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
-              !allSelected
+              !allSelected || (hasChecked && aiTutorLoading)
                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                 : "bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md active:scale-[0.98]"
             }`}
