@@ -1,21 +1,54 @@
-export default function LessonsPage() {
+import { LessonCard } from '@/components/LessonCard'
+import { PrismaClient } from '@/lib/generated/prisma'
+
+const prisma = new PrismaClient()
+
+export default async function LessonsPage() {
+  // Fetch all lessons from database
+  const lessons = await prisma.lesson.findMany({
+    orderBy: {
+      sortOrder: 'asc',
+    },
+    include: {
+      unit: true,
+      _count: {
+        select: {
+          questions: true,
+          exercises: true,
+        },
+      },
+    },
+  })
+
   return (
-    <div className="w-full min-h-screen p-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">Lessons</h1>
-      <p className="text-lg text-gray-600">Học các bài ngữ pháp tiếng Anh</p>
-      
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2">Lesson 1: Present Simple</h3>
-          <p className="text-gray-600">Học thì hiện tại đơn</p>
+    <div className="w-full min-h-screen bg-white">
+      {/* Header Section */}
+      <div className="border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-8 py-8">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-1">
+            Khóa học
+          </h1>
+          <p className="text-sm text-gray-600">
+            Học ngữ pháp tiếng Anh hiệu quả - 12 thì trong tiếng Anh
+          </p>
         </div>
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2">Lesson 2: Past Simple</h3>
-          <p className="text-gray-600">Học thì quá khứ đơn</p>
-        </div>
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2">Lesson 3: Present Perfect</h3>
-          <p className="text-gray-600">Học thì hiện tại hoàn thành</p>
+      </div>
+
+      {/* Lessons List */}
+      <div className="max-w-5xl mx-auto px-8 py-8">
+        <div className="space-y-4">
+          {lessons.map((lesson, index) => (
+            <LessonCard
+              key={lesson.id}
+              id={index + 1}
+              title={lesson.title}
+              description={lesson.description || 'Học ngữ pháp tiếng Anh'}
+              progress={0}
+              lessons={lesson._count.questions}
+              duration={`${Math.ceil(lesson._count.questions * 2)} phút`}
+              index={index}
+            />
+          ))}
         </div>
       </div>
     </div>

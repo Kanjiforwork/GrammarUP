@@ -1,22 +1,58 @@
-export default function ExercisePage() {
+import { ExerciseCard } from '@/components/ExerciseCard'
+import { PrismaClient } from '@/lib/generated/prisma'
+
+const prisma = new PrismaClient()
+
+export default async function ExercisePage() {
+  // Fetch all exercises from database
+  const exercises = await prisma.exercise.findMany({
+    orderBy: {
+      sortOrder: 'asc',
+    },
+    include: {
+      lesson: true,
+      _count: {
+        select: {
+          exerciseQuestions: true,
+        },
+      },
+    },
+  })
+
   return (
-    <div className="w-full min-h-screen p-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-4">Exercise</h1>
-      <p className="text-lg text-gray-600">Luyện tập ngữ pháp tiếng Anh</p>
-      
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <a href="/exercise/1" className="p-6 bg-blue-50 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-          <h3 className="text-xl font-semibold mb-2">Exercise 1</h3>
-          <p className="text-gray-600">Bài tập ngữ pháp cơ bản</p>
-        </a>
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2">Exercise 2</h3>
-          <p className="text-gray-600">Bài tập nâng cao</p>
+    <div className="w-full min-h-screen bg-white">
+      {/* Header Section */}
+      <div className="border-b border-gray-200">
+        <div className="max-w-5xl mx-auto px-8 py-8">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-1">
+            Bài tập
+          </h1>
+          <p className="text-sm text-gray-600">
+            Luyện tập ngữ pháp tiếng Anh - {exercises.length} bài tập
+          </p>
         </div>
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold mb-2">Exercise 3</h3>
-          <p className="text-gray-600">Bài tập tổng hợp</p>
-        </div>
+      </div>
+
+      {/* Exercises List */}
+      <div className="max-w-5xl mx-auto px-8 py-8">
+        {exercises.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Chưa có bài tập nào. Vui lòng chạy seed script.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {exercises.map((exercise, index) => (
+              <ExerciseCard
+                key={exercise.id}
+                id={index + 1}
+                title={exercise.title}
+                description={exercise.description || 'Luyện tập ngữ pháp'}
+                questions={exercise._count.exerciseQuestions}
+                index={index}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

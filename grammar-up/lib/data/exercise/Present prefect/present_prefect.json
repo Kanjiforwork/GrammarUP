@@ -155,5 +155,85 @@
     "prompt": "Hoàn chỉnh câu:",
     "concept": "Present Perfect Simple",
     "tokens": ["He", "has", "just", "arrived", "home"]
+  },
+  {
+    "id": "pp-q21",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Tôi đã từng đến Việt Nam.",
+    "correctAnswer": "I have been to Vietnam."
+  },
+  {
+    "id": "pp-q22",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Cô ấy chưa bao giờ ăn sushi.",
+    "correctAnswer": "She has never eaten sushi."
+  },
+  {
+    "id": "pp-q23",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Họ đã sống ở đây từ năm 2010.",
+    "correctAnswer": "They have lived here since 2010."
+  },
+  {
+    "id": "pp-q24",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Anh ấy vừa mới đi học về.",
+    "correctAnswer": "He has just come home from school."
+  },
+  {
+    "id": "pp-q25",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Tôi đã hoàn thành bài tập của mình rồi.",
+    "correctAnswer": "I have finished my homework."
+  },
+  {
+    "id": "pp-q26",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Chúng tôi đã gặp cô ấy nhiều lần.",
+    "correctAnswer": "We have met her many times."
+  },
+  {
+    "id": "pp-q27",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Em gái tôi chưa đọc cuốn sách này.",
+    "correctAnswer": "My sister has not read this book."
+  },
+  {
+    "id": "pp-q28",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Bạn đã từng đi du lịch nước ngoài chưa?",
+    "correctAnswer": "Have you ever traveled abroad?"
+  },
+  {
+    "id": "pp-q29",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Họ đã học tiếng Anh được 3 năm rồi.",
+    "correctAnswer": "They have studied English for 3 years."
+  },
+  {
+    "id": "pp-q30",
+    "type": "TRANSLATE",
+    "prompt": "Dịch câu sau sang tiếng Anh:",
+    "concept": "Present Perfect Simple",
+    "vietnameseText": "Cô ấy đã làm xong báo cáo chưa?",
+    "correctAnswer": "Has she finished the report?"
   }
 ]

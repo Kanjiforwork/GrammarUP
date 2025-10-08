@@ -45,8 +45,7 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   return (
-    <Sidebar className="border-r border-gray-100 relative overflow-hidden">
-      {/* Subtle gradient background - matching home page */}
+<Sidebar className="border-r border-gray-100 h-screen max-h-screen relative overflow-hidden sticky top-0">      {/* Subtle gradient background - matching home page */}
       <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50/50 to-teal-50/20 -z-10" />
       
       {/* Decorative elements */}

@@ -24,6 +24,18 @@ export default function AccountPage() {
     loadUser()
   }, [])
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen p-8 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm text-gray-500">Đang tải...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full min-h-screen p-8">
       <h1 className="text-4xl font-bold text-gray-800 mb-4">Account</h1>
@@ -36,13 +48,13 @@ export default function AccountPage() {
             <div>
               <label className="text-sm font-medium text-gray-600">Email</label>
               <p className="text-lg text-gray-800">
-                {isLoading ? '' : (userEmail || 'Chưa có thông tin')}
+                {userEmail || 'Chưa có thông tin'}
               </p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-600">Tên</label>
               <p className="text-lg text-gray-800">
-                {isLoading ? '' : (userName || 'Chưa có thông tin')}
+                {userName || 'Chưa có thông tin'}
               </p>
             </div>
           </div>

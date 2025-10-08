@@ -18,16 +18,18 @@ export async function POST(request: NextRequest) {
     Loại câu hỏi: ${questionType}
     
     Hãy thực hiện theo thứ tự:
-- Chào học viên, dùng 1 trong 3 cụm sau: Hế lu, À câu này không khó đâu 
-- Giải thích tại sao đáp án của học sinh sai (ngắn gọn, dễ hiểu) 
-- Giải thích tại sao đáp án đúng là đúng - Khuyến khích học sinh (1 câu ngắn): "Cố lên nha, ai cũng sai mà hihi" 🙆‍♂️ hoặc tương tự
+    1. Kiểm tra lỗi chính tả hoặc đánh máy.
+    2. So sánh cấu trúc câu giữa hai đáp án:
+       - Chủ ngữ (subject) có giống hoặc phù hợp không?
+       - Động từ (verb) có đúng thì và dạng không?
+       - Tân ngữ (object) và trật tự từ có đúng không?
+    3. Sau đó, so sánh ý nghĩa tổng thể — nếu ý nghĩa tương đương nhưng cấu trúc sai, hãy nói rõ lỗi nào sai.
+    4. Nếu học sinh dùng cấu trúc khác nhưng vẫn diễn đạt đúng ý, hãy ghi nhận điều đó.
+    5. Giải thích dễ hiểu, thân thiện, không gạch đầu dòng hay số thứ tự.
+    6. Kết thúc bằng 1 câu khích lệ kiểu: "Cố lên nha, ai cũng sai mà hihi 🙆‍♂️"
+    
     Giọng văn: thân thiện, tự nhiên, Gen Z vibe.
     Ngắn gọn (tối đa 200 từ), không liệt kê số, không quá hàn lâm.`
-    
-    
-    
-    
-
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ feedback })
   } catch (error) {
-    console.error('AI Tutor Error:', error)
+    console.error('AI Tutor Translate Error:', error)
     return NextResponse.json(
       { error: 'Không thể tạo feedback từ AI tutor' },
       { status: 500 }
