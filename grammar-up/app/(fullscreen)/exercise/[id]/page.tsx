@@ -1,14 +1,17 @@
-import ExerciseClient from './exercise-client'
-import { PrismaClient } from '@/lib/generated/prisma'
+import ExerciseClient from './exercise-client'  // ✅ Không có .tsx
+import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 
-const prisma = new PrismaClient()
+type PageProps = {
+  params: { id: string }
+}
 
-export default async function ExercisePage() {
-  // Fetch the first exercise (Present Simple)
-  const exercise = await prisma.exercise.findFirst({
+export default async function ExercisePage({ params }: PageProps) {
+  const exerciseId = params.id
+  
+  const exercise = await prisma.exercise.findUnique({
     where: {
-      id: 'exercise-present-simple'
+      id: exerciseId
     },
     include: {
       exerciseQuestions: {
@@ -26,8 +29,7 @@ export default async function ExercisePage() {
     notFound()
   }
 
-  // Transform questions to match the expected format
-  const questions = exercise.exerciseQuestions.map((eq) => {
+  const questions = exercise.exerciseQuestions.map((eq: any) => {
     const q = eq.question
     const data = q.data as any
 
@@ -36,7 +38,6 @@ export default async function ExercisePage() {
       type: q.type as "MCQ" | "CLOZE" | "ORDER" | "TRANSLATE",
       prompt: q.prompt,
       concept: q.concept,
-      // Type-specific data
       choices: data.choices,
       answerIndex: data.answerIndex,
       template: data.template,

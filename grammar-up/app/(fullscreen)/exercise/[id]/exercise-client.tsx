@@ -9,6 +9,7 @@ import { TranslateQuestion } from "@/components/TranslateQuestion"
 import { useState, useEffect } from "react"
 import { useSound } from '@/hooks/useSound'
 
+
 type Question = {
   id: string
   type: "MCQ" | "CLOZE" | "ORDER" | "TRANSLATE"
@@ -32,6 +33,9 @@ function shuffleArray<T>(array: T[]): T[] {
   }
   return shuffled
 }
+
+
+
 
 export default function ExerciseClient({ 
   questions, 

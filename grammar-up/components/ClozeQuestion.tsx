@@ -181,11 +181,13 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
   const hasWrongAnswer = hasChecked && userAnswers.some((ans, idx) => ans.trim().toLowerCase() !== answers[idx].trim().toLowerCase())
 
   return (
-    <div className="relative w-full h-full">
+<div className="relative w-full h-full">
+      {/* Main content area with padding for bottom bar */}
       <div className="w-full h-full overflow-auto pb-32">
-        <div className="w-full max-w-4xl mx-auto p-8 flex flex-col justify-center min-h-full">
-          {/* Character with speech bubble */}
-          <div className="flex items-start gap-8 mb-12">
+        <div className="w-full max-w-4xl mx-auto p-2 flex flex-col justify-center min-h-full">
+          {/* Character with speech bubble containing question */}
+          <div className="flex items-start gap-8 ">
+            {/* Character - remove whitespace */}
             <div className="flex-shrink-0 -ml-4">
               <Image 
                 src="/dolphin_book.png"
@@ -197,8 +199,10 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
               />
             </div>
             
-            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-md border-2 border-teal-200">
+            {/* Speech bubble with question */}
+            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
               <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
+              {/* Small triangle pointer */}
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>
           </div>

@@ -53,9 +53,9 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
     <div className="relative w-full h-full">
       {/* Main content area with padding for bottom bar */}
       <div className="w-full h-full overflow-auto pb-32">
-        <div className="w-full max-w-4xl mx-auto p-8 flex flex-col justify-center min-h-full">
+        <div className="w-full max-w-4xl mx-auto p-2 flex flex-col justify-center min-h-full">
           {/* Character with speech bubble containing question */}
-          <div className="flex items-start gap-8 mb-12">
+          <div className="flex items-start gap-8 ">
             {/* Character - remove whitespace */}
             <div className="flex-shrink-0 -ml-4">
               <Image 
@@ -86,10 +86,14 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
               let borderColor = "border-gray-50"
               let bgColor = "bg-gray-50 hover:bg-white-50"
               let textColor = "text-gray-600"
+              let badgeBgColor = "bg-gray-100"
+              let badgeTextColor = "text-gray-600"
               
               if (isSelected && !hasChecked) {
                 borderColor = "border-teal-400"
                 bgColor = "bg-teal-50"
+                badgeBgColor = "bg-teal-500"
+                badgeTextColor = "text-white"
               }
               
               if (showResult) {
@@ -97,10 +101,14 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
                   borderColor = "border-green-500"
                   bgColor = "bg-green-50"
                   textColor = "text-green-800"
+                  badgeBgColor = "bg-green-500"
+                  badgeTextColor = "text-white"
                 } else {
                   borderColor = "border-red-500"
                   bgColor = "bg-red-50"
                   textColor = "text-red-800"
+                  badgeBgColor = "bg-red-500"
+                  badgeTextColor = "text-white"
                 }
               }
               
@@ -114,7 +122,7 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
                   } flex items-center gap-4 shadow-md hover:shadow-xl`}
                 >
                   {/* Number badge */}
-                  <div className={`flex-shrink-0 w-12 h-12 ${isSelected && !hasChecked ? 'bg-teal-500 text-white' : 'bg-gray-100 text-gray-600'} rounded-xl flex items-center justify-center font-bold text-lg transition-colors`}>
+                  <div className={`flex-shrink-0 w-12 h-12 ${badgeBgColor} ${badgeTextColor} rounded-xl flex items-center justify-center font-bold text-lg transition-colors`}>
                     {index + 1}
                   </div>
                   

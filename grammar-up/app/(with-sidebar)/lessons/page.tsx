@@ -1,7 +1,7 @@
 import { LessonCard } from '@/components/LessonCard'
-import { PrismaClient } from '@/lib/generated/prisma'
+import { prisma } from '@/lib/prisma' // ✅ Đổi thành này
 
-const prisma = new PrismaClient()
+// ❌ XÓA: const prisma = new PrismaClient()
 
 export default async function LessonsPage() {
   // Fetch all lessons from database

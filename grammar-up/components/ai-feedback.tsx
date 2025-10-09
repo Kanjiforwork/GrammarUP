@@ -17,14 +17,7 @@ export function AIFeedback({ question, userAnswer, correctAnswer, questionType, 
   const [feedback, setFeedback] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const hasFetchedRef = useRef(false)
-
-  useEffect(() => {
-    // Chỉ fetch 1 lần duy nhất khi show = true và chưa fetch trước đó
-    if (show && userAnswer !== correctAnswer && !hasFetchedRef.current) {
-      hasFetchedRef.current = true
-      fetchFeedback()
-    }
-  }, [show, userAnswer, correctAnswer])
+  const divRef = useRef<HTMLDivElement>(null)
 
   const fetchFeedback = async () => {
     setLoading(true)
@@ -51,10 +44,97 @@ export function AIFeedback({ question, userAnswer, correctAnswer, questionType, 
     }
   }
 
+  useEffect(() => {
+    // Scroll ngay khi component được mount (xuất hiện)
+    if (divRef.current) {
+      console.log('🔍 AI Feedback component mounted, scrolling immediately...')
+      
+      // Đợi một chút để DOM render xong
+      const timer = setTimeout(() => {
+        if (!divRef.current) return
+        
+        console.log('📜 Executing scroll...')
+        
+        // Lấy vị trí của feedback element
+        const rect = divRef.current.getBoundingClientRect()
+        const absoluteTop = rect.top + window.pageYOffset
+        const elementHeight = rect.height
+        
+        console.log('Element position:', {
+          top: absoluteTop,
+          height: elementHeight,
+          windowHeight: window.innerHeight
+        })
+        
+        // Scroll window để hiện feedback ở cuối màn hình
+        const targetScroll = absoluteTop + elementHeight - window.innerHeight + 50 // +50px padding
+        
+        console.log('Scrolling window to:', targetScroll)
+        
+        window.scrollTo({
+          top: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        })
+      }, 300) // Delay ngắn hơn vì không cần đợi GPT
+      
+      return () => clearTimeout(timer)
+    }
+  }, []) // Empty dependency array - chỉ chạy khi component mount
+
+  useEffect(() => {
+    // Chỉ fetch 1 lần duy nhất khi show = true và chưa fetch trước đó
+    if (show && userAnswer !== correctAnswer && !hasFetchedRef.current) {
+      hasFetchedRef.current = true
+      fetchFeedback()
+    }
+  }, [show, userAnswer, correctAnswer])
+
+  useEffect(() => {
+    // Chỉ scroll khi feedback đã được load xong (có nội dung)
+    if (divRef.current && feedback && feedback.trim() !== '') {
+      console.log('🔍 AI Feedback loaded, attempting scroll...')
+      
+      // Đợi để DOM update xong
+      const timer = setTimeout(() => {
+        if (!divRef.current) return
+        
+        console.log('📜 Executing scroll...')
+        
+        // Lấy vị trí của feedback element
+        const rect = divRef.current.getBoundingClientRect()
+        const absoluteTop = rect.top + window.pageYOffset
+        const elementHeight = rect.height
+        
+        console.log('Element position:', {
+          top: absoluteTop,
+          height: elementHeight,
+          windowHeight: window.innerHeight
+        })
+        
+        // Scroll window để hiện feedback ở cuối màn hình
+        const targetScroll = absoluteTop + elementHeight - window.innerHeight + 50 // +50px padding
+        
+        console.log('Scrolling window to:', targetScroll)
+        
+        window.scrollTo({
+          top: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        })
+        
+        // Backup: force scroll
+        setTimeout(() => {
+          console.log('🔧 Current window scroll:', window.pageYOffset)
+        }, 500)
+      }, 800)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [feedback])
+
   if (!show) return null
 
   return (
-    <div className="mt-6 p-6 bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-2xl border-2 border-teal-200">
+    <div  ref={divRef} className="mt-6 p-6 bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-2xl border-2 border-teal-200">
       <div className="flex items-start gap-4">
         {/* Dolphin Avatar */}
         <div className="flex-shrink-0">

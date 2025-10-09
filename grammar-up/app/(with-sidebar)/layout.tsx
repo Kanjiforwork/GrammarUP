@@ -17,8 +17,6 @@ export default function WithSidebarLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${lexend.className} antialiased`}>
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset className="min-h-dvh flex flex-col min-w-0">
@@ -30,7 +28,6 @@ export default function WithSidebarLayout({
             </main>
           </SidebarInset>
         </SidebarProvider>
-      </body>
-    </html>
+
   );
 }

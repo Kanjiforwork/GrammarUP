@@ -3,7 +3,7 @@
 import Link from 'next/link'
 
 interface ExerciseCardProps {
-  id: number
+  id: string  // ✅ Đổi từ number sang string
   title: string
   description: string
   questions: number
@@ -18,7 +18,7 @@ export function ExerciseCard({
   index 
 }: ExerciseCardProps) {
   return (
-    <Link href={`/exercise/${id}`}>
+    <Link href={`/exercise/${id}`}>  {/* ✅ Dùng CUID string */}
       <div
         className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-teal-500 hover:shadow-md transition-all duration-300 cursor-pointer"
         style={{
