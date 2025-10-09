@@ -14,6 +14,7 @@ export default async function ExercisePage() {
       _count: {
         select: {
           exerciseQuestions: true,
+          
         },
       },
     },
@@ -35,12 +36,7 @@ export default async function ExercisePage() {
 
       {/* Exercises List */}
       <div className="max-w-5xl mx-auto px-8 py-8">
-        {exercises.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Chưa có bài tập nào. Vui lòng chạy seed script.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {exercises.map((exercise, index) => (
               <ExerciseCard
                 key={exercise.id}
@@ -52,7 +48,6 @@ export default async function ExercisePage() {
               />
             ))}
           </div>
-        )}
       </div>
     </div>
   );
