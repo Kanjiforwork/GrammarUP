@@ -43,7 +43,7 @@ QUY TẮC CHẤM ĐIỂM (NGHIÊM NGẶT):
 - Sai dấu câu cơ bản (thiếu dấu chấm câu, thiếu apostrophe trong viết tắt...)
 - Dùng sai thì
 - Thiếu/thừa mạo từ (a/an/the) khi cần thiết
-- Nếu Là nơi chốn: Hanoi, Ha Noi thì y như nhau, không nào sai cả
+- Nếu Là nơi chốn: Hanoi, Ha Noi thì y như nhau, Cả hai đều đúng
 
 ⚠️ LƯU Ý:
 - Viết hoa/thường đầu câu: không viết hoa chữ cái đầu câu

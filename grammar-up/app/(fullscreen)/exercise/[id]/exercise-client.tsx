@@ -6,6 +6,7 @@ import { MultipleChoice } from "@/components/MultipleChoice"
 import { ClozeQuestion } from "@/components/ClozeQuestion"
 import { OrderQuestion } from "@/components/OrderQuestion"
 import { TranslateQuestion } from "@/components/TranslateQuestion"
+import { ExerciseCompletionModal } from "@/components/ExerciseCompletionModal"
 import { useState, useEffect } from "react"
 import { useSound } from '@/hooks/useSound'
 
@@ -47,6 +48,7 @@ export default function ExerciseClient({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const { playSound } = useSound()
 
   // Shuffle questions on mount
@@ -67,10 +69,10 @@ export default function ExerciseClient({
     if (currentQuestionIndex < allQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
     } else {
-      // Exercise completed - play finish sound
+      // Exercise completed - play finish sound and show modal
       playSound('finish')
       setTimeout(() => {
-        alert(`Hoàn thành! Bạn trả lời đúng ${correctAnswers + (isCorrect ? 1 : 0)}/${allQuestions.length} câu`)
+        setIsCompletionModalOpen(true)
       }, 500)
     }
   }
@@ -82,9 +84,22 @@ export default function ExerciseClient({
     } else {
       playSound('finish')
       setTimeout(() => {
-        alert(`Hoàn thành! Bạn trả lời đúng ${correctAnswers}/${allQuestions.length} câu`)
+        setIsCompletionModalOpen(true)
       }, 500)
     }
+  }
+
+  const handleRetry = () => {
+    // Reset everything
+    setCurrentQuestionIndex(0)
+    setCorrectAnswers(0)
+    setIsCompletionModalOpen(false)
+    const shuffled = shuffleArray(questions)
+    setAllQuestions(shuffled)
+  }
+
+  const handleCloseModal = () => {
+    setIsCompletionModalOpen(false)
   }
 
   // Render appropriate component based on question type
@@ -182,6 +197,15 @@ export default function ExerciseClient({
       <div className="flex-1 flex flex-col relative z-10">
         {renderQuestion()}
       </div>
+
+      {/* Completion Modal */}
+      <ExerciseCompletionModal
+        isOpen={isCompletionModalOpen}
+        score={correctAnswers}
+        totalQuestions={allQuestions.length}
+        onRetry={handleRetry}
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }
