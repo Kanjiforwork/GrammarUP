@@ -35,11 +35,6 @@ const items = [
     url: "/account",
     icon: CircleUser,
   },
-  {
-    title: "Cài đặt",
-    url: "/settings",
-    icon: Settings,
-  },
 ]
 
 export function AppSidebar() {

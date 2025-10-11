@@ -2,14 +2,15 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Trophy, ThumbsUp, Award, BookOpen, RotateCcw, LogOut } from 'lucide-react'
-import { useEffect } from 'react'
+import { Trophy, ThumbsUp, Award, BookOpen, RotateCcw, LogOut, Flame } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 
 interface ExerciseCompletionModalProps {
   isOpen: boolean
   score: number
   totalQuestions: number
+  exerciseId: string
   onRetry: () => void
   onClose: () => void
 }
@@ -17,7 +18,8 @@ interface ExerciseCompletionModalProps {
 export function ExerciseCompletionModal({ 
   isOpen, 
   score, 
-  totalQuestions, 
+  totalQuestions,
+  exerciseId,
   onRetry,
   onClose 
 }: ExerciseCompletionModalProps) {
@@ -26,9 +28,19 @@ export function ExerciseCompletionModal({
   const isGood = percentage >= 70
   const isFair = percentage >= 50
 
-  // Trigger confetti effect when modal opens
+  const [streakData, setStreakData] = useState<{
+    streak: number
+    highestStreak: number
+    completedExercises: number
+  } | null>(null)
+  const [isUpdatingStreak, setIsUpdatingStreak] = useState(false)
+
+  // Trigger confetti effect and update streak when modal opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isUpdatingStreak) {
+      // Update streak first
+      updateStreak()
+      
       // Delay confetti slightly for better effect
       setTimeout(() => {
         if (isPerfect) {
@@ -73,18 +85,37 @@ export function ExerciseCompletionModal({
             origin: { y: 0.7 },
             colors: ['#14b8a6', '#0d9488', '#0f766e']
           })
-        } else {
-          // Low score - still celebrate effort!
-          confetti({
-            particleCount: 100,
-            spread: 40,
-            origin: { y: 0.7 },
-            colors: ['#14b8a6', '#0d9488', '#0f766e']
-          })
         }
       }, 200)
     }
-  }, [isOpen, isPerfect, isGood, isFair])
+  }, [isOpen, isPerfect, isGood, isFair, isUpdatingStreak])
+
+  const updateStreak = async () => {
+    setIsUpdatingStreak(true)
+    try {
+      const response = await fetch('/api/complete-exercise', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          exerciseId,
+          score,
+          totalQuestions,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStreakData(data)
+        console.log('✅ Streak updated:', data)
+      }
+    } catch (error) {
+      console.error('❌ Failed to update streak:', error)
+    } finally {
+      setIsUpdatingStreak(false)
+    }
+  }
 
   // Determine message, icon, and color based on score
   let message = ''
@@ -155,7 +186,7 @@ export function ExerciseCompletionModal({
           </div>
 
           {/* Score Display */}
-          <div className={`${bgColor} rounded-2xl p-6 mb-6`}>
+          <div className={`${bgColor} rounded-2xl p-6 mb-4`}>
             <div className="text-center">
               <div className="text-5xl font-bold text-gray-900 mb-2">
                 {score}<span className="text-3xl text-gray-600">/{totalQuestions}</span>
@@ -168,6 +199,23 @@ export function ExerciseCompletionModal({
               </div>
             </div>
           </div>
+
+          {/* Streak Display */}
+          {streakData && (
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-4 mb-6">
+              <div className="flex items-center justify-center gap-3">
+                <Flame className="w-6 h-6 text-orange-500" />
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {streakData.streak} ngày
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Streak hiện tại (Cao nhất: {streakData.highestStreak})
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="space-y-3">

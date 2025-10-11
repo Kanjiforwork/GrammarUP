@@ -1,9 +1,9 @@
 import { LessonCard } from '@/components/LessonCard'
-import { prisma } from '@/lib/prisma' // ✅ Đổi thành này
+import { prisma } from '@/lib/prisma'
+import { ProtectedRoute } from '@/components/protected-route'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
-// ❌ XÓA: const prisma = new PrismaClient()
-
-export default async function LessonsPage() {
+async function LessonsPageContent() {
   // Fetch all lessons from database
   const lessons = await prisma.lesson.findMany({
     orderBy: {
@@ -52,5 +52,19 @@ export default async function LessonsPage() {
         </div>
       </div>
     </div>
-  );
+  )
+}
+
+export default async function LessonsPage() {
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    return (
+      <ProtectedRoute message="Đăng nhập để xem khóa học">
+        <div />
+      </ProtectedRoute>
+    )
+  }
+  
+  return <LessonsPageContent />
 }

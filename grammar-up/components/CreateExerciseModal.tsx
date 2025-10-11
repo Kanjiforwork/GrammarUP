@@ -94,10 +94,10 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
     try {
       setIsSubmitting(true)
       setError(null)
-      
+
       // Stage 1: Generating questions
       setLoadingStage('generating')
-      
+
       const response = await fetch('/api/exercises', {
         method: 'POST',
         headers: {
@@ -118,11 +118,11 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
 
       // Success!
       console.log('✅ Exercise created:', result.exercise)
-      
+
       // Show success state briefly
       setLoadingStage(null)
       setIsSubmitting(false)
-      
+
       // Reset and close
       resetForm()
       onSuccess?.()
@@ -132,10 +132,10 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
       console.error('❌ Error creating exercise:', err)
       setIsSubmitting(false)
       setLoadingStage(null)
-      
+
       const errorMessage = err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định'
       setError(errorMessage)
-      
+
       // Show retry dialog if under max attempts
       if (retryCount < MAX_RETRY_ATTEMPTS) {
         setShowRetryDialog(true)
@@ -277,11 +277,10 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
               <button
                 onClick={() => setMode('ai')}
                 disabled={isSubmitting}
-                className={`flex-1 px-4 py-2.5 rounded-lg flex items-center justify-center font-semibold text-sm transition-all disabled:opacity-50 ${
-                  mode === 'ai'
+                className={`flex-1 px-4 py-2.5 rounded-lg flex items-center justify-center font-semibold text-sm transition-all disabled:opacity-50 ${mode === 'ai'
                     ? 'bg-white text-teal-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 <Bot className="w-5 h-5" />
                 <span className="ml-2">AI tạo đề</span>
@@ -290,8 +289,8 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                 onClick={() => setMode('manual')}
                 disabled={isSubmitting}
                 className={`flex-1 px-4 py-2.5 rounded-lg flex items-center justify-center font-semibold text-sm transition-all disabled:opacity-50 ${mode === 'manual'
-                    ? 'bg-white text-teal-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-teal-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
                   }`}
               >
                 <Pen className="w-5 h-5" />
@@ -315,8 +314,8 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                       onClick={() => setDifficulty(level)}
                       disabled={isSubmitting}
                       className={`px-4 py-3 rounded-xl font-semibold text-sm transition-all border-2 disabled:opacity-50 ${difficulty === level
-                          ? 'bg-teal-50 border-teal-500 text-teal-700'
-                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                        ? 'bg-teal-50 border-teal-500 text-teal-700'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                         }`}
                     >
                       {level}
@@ -342,14 +341,14 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                       onClick={() => toggleQuestionType(key as keyof typeof questionTypes)}
                       disabled={isSubmitting}
                       className={`px-4 py-3 rounded-xl text-left transition-all border-2 disabled:opacity-50 ${questionTypes[key as keyof typeof questionTypes]
-                          ? 'bg-teal-50 border-teal-500'
-                          : 'bg-white border-gray-200 hover:border-gray-300'
+                        ? 'bg-teal-50 border-teal-500'
+                        : 'bg-white border-gray-200 hover:border-gray-300'
                         }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${questionTypes[key as keyof typeof questionTypes]
-                            ? 'bg-teal-500 border-teal-500'
-                            : 'border-gray-300'
+                          ? 'bg-teal-500 border-teal-500'
+                          : 'border-gray-300'
                           }`}>
                           {questionTypes[key as keyof typeof questionTypes] && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,20 +391,128 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
           {/* Manual Mode Content */}
           {mode === 'manual' && (
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
                 Nội dung bài tập
               </label>
+
+              {/* Two-column layout for info boxes */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {/* Info Box - Left */}
+                <div className="p-5 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-all">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-900 mb-2">Hỗ trợ 2 định dạng</p>
+                      <div className="space-y-1.5 text-xs text-gray-600">
+                        <div className="flex items-start gap-2">
+                          <span className="text-gray-400 mt-0.5">•</span>
+                          <span><span className="font-medium text-gray-700">Text thường</span> - AI tự động phân tích</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-gray-400 mt-0.5">•</span>
+                          <span><span className="font-medium text-gray-700">JSON</span> - Định dạng có cấu trúc</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Warning Box - Right */}
+                <div className="p-5  border border-gray-200 rounded-xl hover:border-gray-300 transition-all">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-gray-900 mb-3">Chỉ 4 dạng câu hỏi</p>
+
+                      {/* Supported types */}
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        {['Trắc nghiệm', 'Điền từ', 'Sắp xếp', 'Dịch câu'].map((type) => (
+                          <div key={type} className="flex items-center gap-1.5 text-xs">
+                            <div className="w-3.5 h-3.5 rounded-sm bg-teal-500 flex items-center justify-center flex-shrink-0">
+                              <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <span className="text-gray-700">{type}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Not supported */}
+                      <div className="pt-3 border-t border-gray-200">
+                        <div className="flex items-start gap-1.5 text-xs text-gray-500">
+                          <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          <span>Không hỗ trợ: Reading, Listening, Essay</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <textarea
                 value={manualContent}
                 onChange={(e) => setManualContent(e.target.value)}
-                placeholder='{"questions": [{"type": "MCQ", "prompt": "He ___ to school", "concept": "present_simple", "level": "A1", "data": {"choices": ["go", "goes", "going", "went"], "answerIndex": 1}}]}'
-                rows={12}
+                placeholder="Nhập câu hỏi của bạn..."
+                rows={13}
                 disabled={isSubmitting}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all resize-none font-mono text-sm disabled:opacity-50 disabled:bg-gray-50"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all resize-none text-sm disabled:opacity-50 disabled:bg-gray-50 font-normal"
               />
-              <p className="mt-2 text-xs text-gray-500">
-                Nhập JSON với định dạng: {`{ "questions": [...] }`}
-              </p>
+
+              {/* Example section - collapsible or always visible */}
+              <div className="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <details className="group">
+                  <summary className="text-xs font-semibold text-gray-700 cursor-pointer select-none flex items-center gap-2">
+                    <svg className="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                    <span>Xem ví dụ chi tiết</span>
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    {/* Text example */}
+                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                      <p className="text-xs font-semibold text-gray-700 mb-2">📝 Ví dụ Text thường:</p>
+                      <pre className="text-xs text-gray-600 font-mono whitespace-pre-wrap">
+                        {`1. He ___ to school every day (go/goes/going/went)
+2. Điền từ: She ___ coffee (drink)
+3. Sắp xếp: I / like / tea
+4. Dịch: Tôi đi học mỗi ngày`}
+                      </pre>
+                    </div>
+
+                    {/* JSON example */}
+                    <div className="bg-white p-3 rounded-lg border border-gray-200">
+                      <p className="text-xs font-semibold text-gray-700 mb-2">💻 Ví dụ JSON:</p>
+                      <pre className="text-xs text-gray-600 font-mono whitespace-pre-wrap overflow-x-auto">
+                        {`{
+  "questions": [
+    {
+      "type": "MCQ",
+      "prompt": "He ___ to school",
+      "concept": "present_simple",
+      "level": "A1",
+      "data": {
+        "choices": ["go", "goes", "going", "went"],
+        "answerIndex": 1
+      }
+    }
+  ]
+}`}
+                      </pre>
+                    </div>
+                  </div>
+                </details>
+              </div>
             </div>
           )}
         </div>

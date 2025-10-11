@@ -84,7 +84,7 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
               const showResult = hasChecked && isSelected
               
               let borderColor = "border-gray-50"
-              let bgColor = "bg-gray-50 hover:bg-white-50"
+              let bgColor = "bg-white hover:bg-white-50"
               let textColor = "text-gray-600"
               let badgeBgColor = "bg-gray-100"
               let badgeTextColor = "text-gray-600"

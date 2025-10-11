@@ -40,10 +40,12 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function ExerciseClient({ 
   questions, 
-  exerciseTitle 
+  exerciseTitle,
+  exerciseId 
 }: { 
   questions: Question[]
-  exerciseTitle: string 
+  exerciseTitle: string
+  exerciseId: string
 }) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [correctAnswers, setCorrectAnswers] = useState(0)
@@ -203,6 +205,7 @@ export default function ExerciseClient({
         isOpen={isCompletionModalOpen}
         score={correctAnswers}
         totalQuestions={allQuestions.length}
+        exerciseId={exerciseId}
         onRetry={handleRetry}
         onClose={handleCloseModal}
       />

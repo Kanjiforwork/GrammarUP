@@ -2,12 +2,13 @@
 
 import { ExerciseCard } from '@/components/ExerciseCard'
 import { CreateExerciseModal } from '@/components/CreateExerciseModal'
+import { ProtectedRoute } from '@/components/protected-route'
 import { CirclePlus, Search, BookOpen, UserRound } from "lucide-react"
 import { useState, useEffect, useMemo } from 'react'
 
 type FilterType = 'all' | 'official' | 'user'
 
-export default function ExercisePage() {
+function ExercisePageContent() {
   const [exercises, setExercises] = useState<any[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -180,5 +181,13 @@ export default function ExercisePage() {
         onSuccess={handleExerciseCreated}
       />
     </>
+  )
+}
+
+export default function ExercisePage() {
+  return (
+    <ProtectedRoute message="Đăng nhập để xem bài tập">
+      <ExercisePageContent />
+    </ProtectedRoute>
   )
 }

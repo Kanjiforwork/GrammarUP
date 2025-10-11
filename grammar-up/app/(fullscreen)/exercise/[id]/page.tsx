@@ -1,14 +1,14 @@
-import ExerciseClient from './exercise-client'  // ✅ Không có .tsx
+import ExerciseClient from './exercise-client'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { ProtectedRoute } from '@/components/protected-route'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
 type PageProps = {
   params: { id: string }
 }
 
-export default async function ExercisePage({ params }: PageProps) {
-  const exerciseId = params.id
-  
+async function ExercisePageContent({ exerciseId }: { exerciseId: string }) {
   const exercise = await prisma.exercise.findUnique({
     where: {
       id: exerciseId
@@ -48,5 +48,19 @@ export default async function ExercisePage({ params }: PageProps) {
     }
   })
 
-  return <ExerciseClient questions={questions} exerciseTitle={exercise.title} />
+  return <ExerciseClient questions={questions} exerciseTitle={exercise.title} exerciseId={exercise.id} />
+}
+
+export default async function ExercisePage({ params }: PageProps) {
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    return (
+      <ProtectedRoute message="Đăng nhập để làm bài tập">
+        <div />
+      </ProtectedRoute>
+    )
+  }
+  
+  return <ExercisePageContent exerciseId={params.id} />
 }
