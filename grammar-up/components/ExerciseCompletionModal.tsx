@@ -11,6 +11,12 @@ interface ExerciseCompletionModalProps {
   score: number
   totalQuestions: number
   exerciseId: string
+  attempts: Array<{
+    questionId: string
+    answer: any
+    isCorrect: boolean
+    timeSpent: number
+  }>
   onRetry: () => void
   onClose: () => void
 }
@@ -20,6 +26,7 @@ export function ExerciseCompletionModal({
   score, 
   totalQuestions,
   exerciseId,
+  attempts,
   onRetry,
   onClose 
 }: ExerciseCompletionModalProps) {
@@ -102,6 +109,7 @@ export function ExerciseCompletionModal({
           exerciseId,
           score,
           totalQuestions,
+          attempts, // ← Send attempts data
         }),
       })
 

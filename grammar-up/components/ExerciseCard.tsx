@@ -1,24 +1,32 @@
 'use client'
 
 import Link from 'next/link'
+import { CheckCircle } from 'lucide-react'
 
 interface ExerciseCardProps {
-  id: string  // ✅ Đổi từ number sang string
+  id: string
   title: string
   description: string
   questions: number
   index: number
+  latestScore?: {
+    score: number
+    totalQuestions: number
+    percentage: number
+    completedAt: Date
+  } | null
 }
 
 export function ExerciseCard({ 
   id, 
   title, 
   description, 
-  questions, 
+  questions,
+  latestScore,
   index 
 }: ExerciseCardProps) {
   return (
-    <Link href={`/exercise/${id}`}>  {/* ✅ Dùng CUID string */}
+    <Link href={`/exercise/${id}`}>
       <div
         className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-teal-500 hover:shadow-md transition-all duration-300 cursor-pointer"
         style={{
@@ -28,9 +36,14 @@ export function ExerciseCard({
         <div className="flex items-start justify-between gap-6">
           {/* Left Content */}
           <div className="flex-1">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
-              {title}
-            </h3>
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-xl font-semibold text-gray-900 group-hover:text-teal-600 transition-colors">
+                {title}
+              </h3>
+              {latestScore && (
+                <CheckCircle className="w-5 h-5 text-teal-500 flex-shrink-0" />
+              )}
+            </div>
             <p className="text-sm text-gray-600 mb-4">
               {description}
             </p>
@@ -43,13 +56,28 @@ export function ExerciseCard({
                 </svg>
                 <span>{questions} câu hỏi</span>
               </div>
+
+              {/* Latest Score */}
+              {latestScore && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-teal-50 rounded-full">
+                  <svg className="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-semibold text-teal-700">
+                    {latestScore.percentage}%
+                  </span>
+                  <span className="text-teal-600">
+                    ({latestScore.score}/{latestScore.totalQuestions})
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Right Side - Button only */}
+          {/* Right Side - Button */}
           <div className="flex flex-col items-end gap-3 min-w-[120px]">
             <button className="px-6 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors">
-              Bắt đầu
+              {latestScore ? 'Làm lại' : 'Bắt đầu'}
             </button>
           </div>
         </div>

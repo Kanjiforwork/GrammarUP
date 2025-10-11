@@ -25,6 +25,13 @@ type Question = {
   correctAnswer?: string
 }
 
+type QuestionAttempt = {
+  questionId: string
+  answer: any
+  isCorrect: boolean
+  timeSpent: number
+}
+
 // Shuffle function
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array]
@@ -51,18 +58,32 @@ export default function ExerciseClient({
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [allQuestions, setAllQuestions] = useState<Question[]>([])
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
+  const [attempts, setAttempts] = useState<QuestionAttempt[]>([])
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now())
   const { playSound } = useSound()
 
   // Shuffle questions on mount
   useEffect(() => {
     const shuffled = shuffleArray(questions)
     setAllQuestions(shuffled)
+    setQuestionStartTime(Date.now())
   }, [questions])
 
   const currentQuestion = allQuestions[currentQuestionIndex]
   const progress = allQuestions.length > 0 ? ((currentQuestionIndex + 1) / allQuestions.length) * 100 : 0
   
-  const handleAnswer = (isCorrect: boolean) => {
+  const handleAnswer = (isCorrect: boolean, userAnswer?: any) => {
+    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000) // seconds
+
+    // Save attempt
+    const attempt: QuestionAttempt = {
+      questionId: currentQuestion.id,
+      answer: userAnswer || {},
+      isCorrect,
+      timeSpent
+    }
+    setAttempts(prev => [...prev, attempt])
+
     if (isCorrect) {
       setCorrectAnswers(prev => prev + 1)
     }
@@ -70,6 +91,7 @@ export default function ExerciseClient({
     // Move to next question
     if (currentQuestionIndex < allQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
+      setQuestionStartTime(Date.now()) // Reset timer for next question
     } else {
       // Exercise completed - play finish sound and show modal
       playSound('finish')
@@ -80,9 +102,21 @@ export default function ExerciseClient({
   }
 
   const handleSkip = () => {
+    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000)
+
+    // Save attempt as incorrect when skipped
+    const attempt: QuestionAttempt = {
+      questionId: currentQuestion.id,
+      answer: { skipped: true },
+      isCorrect: false,
+      timeSpent
+    }
+    setAttempts(prev => [...prev, attempt])
+
     // Move to next question without counting as correct
     if (currentQuestionIndex < allQuestions.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1)
+      setQuestionStartTime(Date.now())
     } else {
       playSound('finish')
       setTimeout(() => {
@@ -95,9 +129,11 @@ export default function ExerciseClient({
     // Reset everything
     setCurrentQuestionIndex(0)
     setCorrectAnswers(0)
+    setAttempts([])
     setIsCompletionModalOpen(false)
     const shuffled = shuffleArray(questions)
     setAllQuestions(shuffled)
+    setQuestionStartTime(Date.now())
   }
 
   const handleCloseModal = () => {
@@ -206,6 +242,7 @@ export default function ExerciseClient({
         score={correctAnswers}
         totalQuestions={allQuestions.length}
         exerciseId={exerciseId}
+        attempts={attempts}
         onRetry={handleRetry}
         onClose={handleCloseModal}
       />

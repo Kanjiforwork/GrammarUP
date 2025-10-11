@@ -2,8 +2,9 @@
 
 import { ExerciseCard } from '@/components/ExerciseCard'
 import { CreateExerciseModal } from '@/components/CreateExerciseModal'
+import { AttemptHistoryModal } from '@/components/AttemptHistoryModal'
 import { ProtectedRoute } from '@/components/protected-route'
-import { CirclePlus, Search, BookOpen, UserRound } from "lucide-react"
+import { CirclePlus, Search, BookOpen, UserRound, History } from "lucide-react"
 import { useState, useEffect, useMemo } from 'react'
 
 type FilterType = 'all' | 'official' | 'user'
@@ -11,6 +12,7 @@ type FilterType = 'all' | 'official' | 'user'
 function ExercisePageContent() {
   const [exercises, setExercises] = useState<any[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterType, setFilterType] = useState<FilterType>('all')
@@ -69,7 +71,7 @@ function ExercisePageContent() {
       <div className="w-full min-h-screen bg-white">
         <div className="border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-8 py-6">
-            {/* Single Row: Title, Search Bar, Add Button */}
+            {/* Single Row: Title, Search Bar, Buttons */}
             <div className="flex items-center gap-6">
               {/* Left: Title and Count */}
               <div className="flex-shrink-0">
@@ -93,14 +95,26 @@ function ExercisePageContent() {
                 />
               </div>
               
-              {/* Right: Add Exercise Button */}
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex-shrink-0 px-5 py-3 rounded-xl bg-teal-500 text-white hover:bg-teal-600 transition-all shadow-sm hover:shadow-md flex items-center gap-2 font-semibold whitespace-nowrap"
-              >
-                <span>Thêm bài tập</span>
-                <CirclePlus className="w-5 h-5" />
-              </button>
+              {/* Right: Buttons */}
+              <div className="flex items-center gap-3">
+                {/* History Button */}
+                <button
+                  onClick={() => setIsHistoryOpen(true)}
+                  className="flex-shrink-0 px-5 py-3 rounded-xl bg-white border-2 border-gray-200 text-gray-700 hover:border-teal-400 hover:bg-teal-50 transition-all flex items-center gap-2 font-semibold whitespace-nowrap"
+                >
+                  <History className="w-5 h-5" />
+                  <span>Lịch sử</span>
+                </button>
+
+                {/* Add Exercise Button */}
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="flex-shrink-0 px-5 py-3 rounded-xl bg-teal-500 text-white hover:bg-teal-600 transition-all shadow-sm hover:shadow-md flex items-center gap-2 font-semibold whitespace-nowrap"
+                >
+                  <span>Thêm bài tập</span>
+                  <CirclePlus className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Filter Tabs */}
@@ -166,6 +180,7 @@ function ExercisePageContent() {
                   title={exercise.title}
                   description={exercise.description || 'Luyện tập ngữ pháp'}
                   questions={exercise._count.exerciseQuestions}
+                  latestScore={exercise.latestScore}
                   index={index}
                 />
               ))}
@@ -174,11 +189,16 @@ function ExercisePageContent() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modals */}
       <CreateExerciseModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleExerciseCreated}
+      />
+      
+      <AttemptHistoryModal
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
       />
     </>
   )

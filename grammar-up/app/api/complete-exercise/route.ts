@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { exerciseId, score, totalQuestions } = await request.json()
+    const { exerciseId, score, totalQuestions, attempts } = await request.json()
 
     // Validate input
     if (!exerciseId || score === undefined || !totalQuestions) {
@@ -69,6 +69,22 @@ export async function POST(request: NextRequest) {
     const completedExercises = dbUser.completedExercises || []
     if (!completedExercises.includes(exerciseId)) {
       completedExercises.push(exerciseId)
+    }
+
+    // Save attempts for each question if provided
+    if (attempts && Array.isArray(attempts)) {
+      for (const attempt of attempts) {
+        await prisma.attempt.create({
+          data: {
+            userId: dbUser.id,
+            questionId: attempt.questionId,
+            answer: attempt.answer,
+            isCorrect: attempt.isCorrect,
+            timeSpent: attempt.timeSpent || 0,
+          }
+        })
+      }
+      console.log(`✅ Saved ${attempts.length} attempts`)
     }
 
     // Update user
