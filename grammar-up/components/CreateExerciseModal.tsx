@@ -191,10 +191,10 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
         </div>
       )}
 
-      {/* Modal Container */}
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-3xl">
+      {/* Modal Container - FIXED: Removed overflow-y-auto, added flex column */}
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+        {/* Header - FIXED: Added z-20 */}
+        <div className="relative z-20 bg-white border-b border-gray-200 px-8 py-6 rounded-t-3xl flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-900">Tạo bài tập mới</h2>
             <button
@@ -209,8 +209,8 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
           </div>
         </div>
 
-        {/* Content */}
-        <div className="px-8 py-6">
+        {/* Content - FIXED: Added overflow-y-auto here instead, with z-10 */}
+        <div className="relative z-10 px-8 py-6 overflow-y-auto flex-1">
           {/* Error Display */}
           {error && !showRetryDialog && (
             <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3">
@@ -271,16 +271,17 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
             />
           </div>
 
-          {/* Mode Tabs */}
+          {/* Mode Tabs - FIXED: Removed isolate, not needed now */}
           <div className="mb-6">
-            <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
+            <div className="flex gap-3 p-2 bg-white rounded-2xl border border-gray-100">
               <button
                 onClick={() => setMode('ai')}
                 disabled={isSubmitting}
-                className={`flex-1 px-4 py-2.5 rounded-lg flex items-center justify-center font-semibold text-sm transition-all disabled:opacity-50 ${mode === 'ai'
-                    ? 'bg-white text-teal-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                className={`flex-1 px-6 py-3.5 rounded-xl flex items-center justify-center font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  mode === 'ai'
+                    ? 'bg-teal-500 text-white hover:bg-teal-600 scale-[1.02]'
+                    : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-gray-200'
+                }`}
               >
                 <Bot className="w-5 h-5" />
                 <span className="ml-2">AI tạo đề</span>
@@ -288,10 +289,11 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
               <button
                 onClick={() => setMode('manual')}
                 disabled={isSubmitting}
-                className={`flex-1 px-4 py-2.5 rounded-lg flex items-center justify-center font-semibold text-sm transition-all disabled:opacity-50 ${mode === 'manual'
-                  ? 'bg-white text-teal-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                className={`flex-1 px-6 py-3.5 rounded-xl flex items-center justify-center font-semibold text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  mode === 'manual'
+                    ? 'bg-teal-500 text-white hover:bg-teal-600 scale-[1.02]'
+                    : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-gray-200'
+                }`}
               >
                 <Pen className="w-5 h-5" />
                 <span className="ml-2">Tự nhập đề</span>
@@ -313,10 +315,11 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                       key={level}
                       onClick={() => setDifficulty(level)}
                       disabled={isSubmitting}
-                      className={`px-4 py-3 rounded-xl font-semibold text-sm transition-all border-2 disabled:opacity-50 ${difficulty === level
-                        ? 'bg-teal-50 border-teal-500 text-teal-700'
-                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-                        }`}
+                      className={`px-4 py-3 rounded-xl font-semibold text-sm transition-all border-2 disabled:opacity-50 ${
+                        difficulty === level
+                          ? 'bg-teal-50 border-teal-500 text-teal-700'
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
                     >
                       {level}
                     </button>
@@ -340,23 +343,27 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                       key={key}
                       onClick={() => toggleQuestionType(key as keyof typeof questionTypes)}
                       disabled={isSubmitting}
-                      className={`px-4 py-3 rounded-xl text-left transition-all border-2 disabled:opacity-50 ${questionTypes[key as keyof typeof questionTypes]
-                        ? 'bg-teal-50 border-teal-500'
-                        : 'bg-white border-gray-200 hover:border-gray-300'
-                        }`}
+                      className={`px-4 py-3 rounded-xl text-left transition-all border-2 disabled:opacity-50 ${
+                        questionTypes[key as keyof typeof questionTypes]
+                          ? 'bg-teal-50 border-teal-500'
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${questionTypes[key as keyof typeof questionTypes]
-                          ? 'bg-teal-500 border-teal-500'
-                          : 'border-gray-300'
-                          }`}>
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                          questionTypes[key as keyof typeof questionTypes]
+                            ? 'bg-teal-500 border-teal-500'
+                            : 'border-gray-300'
+                        }`}>
                           {questionTypes[key as keyof typeof questionTypes] && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
                         </div>
-                        <span className={`font-medium ${questionTypes[key as keyof typeof questionTypes] ? 'text-teal-700' : 'text-gray-700'}`}>
+                        <span className={`font-medium ${
+                          questionTypes[key as keyof typeof questionTypes] ? 'text-teal-700' : 'text-gray-700'
+                        }`}>
                           {label}
                         </span>
                       </div>
@@ -422,7 +429,7 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                 </div>
 
                 {/* Warning Box - Right */}
-                <div className="p-5  border border-gray-200 rounded-xl hover:border-gray-300 transition-all">
+                <div className="p-5 border border-gray-200 rounded-xl hover:border-gray-300 transition-all">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center flex-shrink-0">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,8 +524,8 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
           )}
         </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-6 rounded-b-3xl">
+        {/* Footer - FIXED: Added z-20, flex-shrink-0 */}
+        <div className="relative z-20 bg-white border-t border-gray-200 px-8 py-6 rounded-b-3xl flex-shrink-0">
           <div className="flex gap-3 justify-end">
             <button
               onClick={onClose}

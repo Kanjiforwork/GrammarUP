@@ -6,39 +6,34 @@ import { Trophy, ThumbsUp, Award, BookOpen, RotateCcw, LogOut, Flame } from 'luc
 import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 
-interface ExerciseCompletionModalProps {
+interface LessonCompletionModalProps {
   isOpen: boolean
-  score: number
-  totalQuestions: number
-  exerciseId: string
-  attempts: Array<{
-    questionId: string
-    answer: any
-    isCorrect: boolean
-    timeSpent: number
-  }>
+  lessonId: string
+  lessonTitle: string
+  blocksCompleted: number
+  totalBlocks: number
   onRetry: () => void
   onClose: () => void
 }
 
-export function ExerciseCompletionModal({ 
+export function LessonCompletionModal({ 
   isOpen, 
-  score, 
-  totalQuestions,
-  exerciseId,
-  attempts,
+  lessonId,
+  lessonTitle,
+  blocksCompleted,
+  totalBlocks,
   onRetry,
   onClose 
-}: ExerciseCompletionModalProps) {
-  const percentage = Math.round((score / totalQuestions) * 100)
-  const isPerfect = score === totalQuestions
+}: LessonCompletionModalProps) {
+  const percentage = Math.round((blocksCompleted / totalBlocks) * 100)
+  const isPerfect = blocksCompleted === totalBlocks
   const isGood = percentage >= 70
   const isFair = percentage >= 50
 
   const [streakData, setStreakData] = useState<{
     streak: number
     highestStreak: number
-    completedExercises: number
+    completedLessons: number
   } | null>(null)
   const [isUpdatingStreak, setIsUpdatingStreak] = useState(false)
 
@@ -51,7 +46,7 @@ export function ExerciseCompletionModal({
       // Delay confetti slightly for better effect
       setTimeout(() => {
         if (isPerfect) {
-          // Perfect score - reduced confetti
+          // Perfect completion - reduced confetti
           confetti({
             particleCount: 15,
             angle: 60,
@@ -67,7 +62,7 @@ export function ExerciseCompletionModal({
             colors: ['#14b8a6', '#0d9488', '#0f766e']
           })
         } else if (isGood) {
-          // Good score - reduced confetti
+          // Good completion - reduced confetti
           confetti({
             particleCount: 30,
             spread: 70,
@@ -75,7 +70,7 @@ export function ExerciseCompletionModal({
             colors: ['#14b8a6', '#0d9488', '#0f766e']
           })
         } else if (isFair) {
-          // Fair score - reduced confetti
+          // Fair completion - reduced confetti
           confetti({
             particleCount: 20,
             spread: 50,
@@ -90,62 +85,46 @@ export function ExerciseCompletionModal({
   const updateStreak = async () => {
     setIsUpdatingStreak(true)
     try {
-      const response = await fetch('/api/complete-exercise', {
+      const response = await fetch('/api/complete-lesson', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          exerciseId,
-          score,
-          totalQuestions,
-          attempts, // ← Send attempts data
+          lessonId,
+          blocksCompleted,
+          totalBlocks,
         }),
       })
 
       if (response.ok) {
         const data = await response.json()
         setStreakData(data)
-        console.log('✅ Streak updated:', data)
+        console.log('✅ Lesson streak updated:', data)
       }
     } catch (error) {
-      console.error('❌ Failed to update streak:', error)
+      console.error('❌ Failed to update lesson streak:', error)
     } finally {
       setIsUpdatingStreak(false)
     }
   }
 
-  // Determine message, icon, and color based on score
+  // Determine message and icon based on completion
   let message = ''
   let Icon = BookOpen
-  let bgColor = ''
-  let textColor = ''
-  let iconColor = ''
   
   if (isPerfect) {
     message = 'Xuất sắc!'
     Icon = Trophy
-    bgColor = 'bg-gradient-to-br from-yellow-50 to-yellow-100'
-    textColor = 'text-yellow-700'
-    iconColor = 'text-yellow-600'
   } else if (isGood) {
     message = 'Rất tốt!'
     Icon = Award
-    bgColor = 'bg-gradient-to-br from-green-50 to-green-100'
-    textColor = 'text-green-700'
-    iconColor = 'text-green-600'
   } else if (isFair) {
     message = 'Khá đấy!'
     Icon = ThumbsUp
-    bgColor = 'bg-gradient-to-br from-blue-50 to-blue-100'
-    textColor = 'text-blue-700'
-    iconColor = 'text-blue-600'
   } else {
     message = 'Cố gắng thêm!'
     Icon = BookOpen
-    bgColor = 'bg-gradient-to-br from-gray-50 to-gray-100'
-    textColor = 'text-gray-700'
-    iconColor = 'text-gray-600'
   }
 
   if (!isOpen) return null
@@ -173,26 +152,26 @@ export function ExerciseCompletionModal({
           {/* Message with Icon */}
           <div className="text-center mb-6">
             <div className="flex justify-center mb-3">
-              <Icon className={`w-16 h-16 ${iconColor}`} strokeWidth={1.5} />
+              <Icon className="w-16 h-16 text-teal-500" strokeWidth={1.5} />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               Hoàn thành!
             </h2>
-            <p className={`text-lg font-semibold ${textColor}`}>
+            <p className="text-lg font-semibold text-gray-600">
               {message}
             </p>
           </div>
 
-          {/* Score Display */}
-          <div className={`${bgColor} rounded-2xl p-6 mb-4`}>
+          {/* Score Display - White background with teal accent */}
+          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 mb-4">
             <div className="text-center">
               <div className="text-5xl font-bold text-gray-900 mb-2">
-                {score}<span className="text-3xl text-gray-600">/{totalQuestions}</span>
+                {blocksCompleted}<span className="text-3xl text-gray-600">/{totalBlocks}</span>
               </div>
               <div className="text-lg font-medium text-gray-700">
-                Điểm của bạn
+                Phần đã hoàn thành
               </div>
-              <div className="mt-3 text-2xl font-bold" style={{ color: isPerfect ? '#eab308' : isGood ? '#10b981' : isFair ? '#3b82f6' : '#6b7280' }}>
+              <div className="mt-3 text-2xl font-bold text-teal-600">
                 {percentage}%
               </div>
             </div>
@@ -223,11 +202,11 @@ export function ExerciseCompletionModal({
               className="w-full px-6 py-4 bg-teal-500 text-white font-semibold rounded-xl hover:bg-teal-600 transition-all shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-5 h-5" />
-              <span>Làm lại</span>
+              <span>Học lại</span>
             </button>
 
             {/* Exit Button */}
-            <Link href="/exercise" onClick={onClose}>
+            <Link href="/lessons" onClick={onClose}>
               <button className="w-full px-6 py-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
                 <LogOut className="w-5 h-5" />
                 <span>Thoát ra</span>

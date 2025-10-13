@@ -28,7 +28,7 @@ export function ExerciseCard({
   return (
     <Link href={`/exercise/${id}`}>
       <div
-        className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-teal-500 hover:shadow-md transition-all duration-300 cursor-pointer"
+        className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-teal-500 hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden"
         style={{
           animation: `fadeIn 0.3s ease-out ${index * 0.05}s both`
         }}
@@ -82,8 +82,8 @@ export function ExerciseCard({
           </div>
         </div>
 
-        {/* Hover indicator */}
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        {/* Hover indicator - FIXED with overflow-hidden on parent */}
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
         {/* Keyframes */}
         <style jsx>{`

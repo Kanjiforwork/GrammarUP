@@ -12,6 +12,8 @@ interface UserStats {
   highestStreak: number
   completedExercises: number
   completedLessons: number
+  totalExercises: number
+  totalLessons: number
 }
 
 function AccountPageContent() {
@@ -23,7 +25,9 @@ function AccountPageContent() {
     streak: 0,
     highestStreak: 0,
     completedExercises: 0,
-    completedLessons: 0
+    completedLessons: 0,
+    totalExercises: 0,
+    totalLessons: 0
   })
   const [isLoading, setIsLoading] = useState(true)
 
@@ -172,13 +176,13 @@ function AccountPageContent() {
                     {userStats.completedLessons}
                   </span>
                   <span className="text-3xl font-medium text-gray-300">/</span>
-                  <span className="text-3xl font-medium text-gray-400">20</span>
+                  <span className="text-3xl font-medium text-gray-400">{userStats.totalLessons}</span>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-gray-900">
-                      {Math.round((userStats.completedLessons / 20) * 100)}%
+                      {userStats.totalLessons > 0 ? Math.round((userStats.completedLessons / userStats.totalLessons) * 100) : 0}%
                     </span>
                     <span className="text-gray-400 uppercase tracking-wide">
                       Hoàn thành
@@ -187,7 +191,7 @@ function AccountPageContent() {
                   <div className="relative w-full h-1 bg-gray-100 rounded-full overflow-hidden">
                     <div 
                       className="absolute inset-y-0 left-0 bg-teal-500 rounded-full transition-all duration-500"
-                      style={{ width: `${(userStats.completedLessons / 20) * 100}%` }}
+                      style={{ width: `${userStats.totalLessons > 0 ? (userStats.completedLessons / userStats.totalLessons) * 100 : 0}%` }}
                     />
                   </div>
                 </div>
@@ -213,13 +217,13 @@ function AccountPageContent() {
                     {userStats.completedExercises}
                   </span>
                   <span className="text-3xl font-medium text-gray-300">/</span>
-                  <span className="text-3xl font-medium text-gray-400">50</span>
+                  <span className="text-3xl font-medium text-gray-400">{userStats.totalExercises}</span>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="font-medium text-gray-900">
-                      {Math.round((userStats.completedExercises / 50) * 100)}%
+                      {userStats.totalExercises > 0 ? Math.round((userStats.completedExercises / userStats.totalExercises) * 100) : 0}%
                     </span>
                     <span className="text-gray-400 uppercase tracking-wide">
                       Hoàn thành
@@ -228,7 +232,7 @@ function AccountPageContent() {
                   <div className="relative w-full h-1 bg-gray-100 rounded-full overflow-hidden">
                     <div 
                       className="absolute inset-y-0 left-0 bg-teal-500 rounded-full transition-all duration-500"
-                      style={{ width: `${(userStats.completedExercises / 50) * 100}%` }}
+                      style={{ width: `${userStats.totalExercises > 0 ? (userStats.completedExercises / userStats.totalExercises) * 100 : 0}%` }}
                     />
                   </div>
                 </div>

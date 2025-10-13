@@ -35,12 +35,20 @@ export async function GET() {
       WHERE q."lessonId" IS NOT NULL
     `
 
+    // Get total exercises count in system
+    const totalExercises = await prisma.exercise.count()
+
+    // Get total lessons count in system
+    const totalLessons = await prisma.lesson.count()
+
     // Return stats
     return NextResponse.json({
       streak: dbUser.streak,
       highestStreak: dbUser.highestStreak,
       completedExercises: Number(completedExercisesCount[0]?.count || 0),
       completedLessons: Number(completedLessonsCount[0]?.count || 0),
+      totalExercises,
+      totalLessons,
     })
 
   } catch (error) {

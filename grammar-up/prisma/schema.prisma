@@ -1,3 +1,6 @@
+// ==============================
+// GENERATOR & DATASOURCE
+// ==============================
 generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
@@ -9,9 +12,9 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ========================================
+// ==============================
 // ENUMS
-// ========================================
+// ==============================
 
 enum ContentSource {
   OFFICIAL
@@ -43,9 +46,19 @@ enum UserRole {
   ADMIN
 }
 
-// ========================================
+// NEW: Lesson blocks for theory content
+enum LessonBlockType {
+  INTRO
+  WHAT
+  HOW
+  NOTE
+  REMIND
+  MINIQUIZ
+}
+
+// ==============================
 // MODELS
-// ========================================
+// ==============================
 
 model Unit {
   id          String   @id @default(cuid())
@@ -54,47 +67,53 @@ model Unit {
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  lessons     Lesson[]  // camelCase - ĐÚNG
+
+  lessons     Lesson[]
 
   @@index([sortOrder])
 }
 
 model Lesson {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String?
   unitId      String
-  sortOrder   Int        @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
-  unit        Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  questions   Question[] // camelCase - ĐÚNG
-  exercises   Exercise[] // camelCase - ĐÚNG
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  unit        Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  exercises   Exercise[]
+
+  // NEW: theory blocks (Intro/What/How/Note/Remind/MiniQuiz)
+  blocks      LessonBlock[]
 
   @@index([unitId, sortOrder])
 }
 
 model Question {
-  id               String             @id @default(cuid())
-  type             QType
-  prompt           String
-  concept          String
-  level            Level?
-  lessonId         String?
-  explain          String?
-  data             Json
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  createdById      String?
-  isPublic         Boolean            @default(false)
-  source           ContentSource      @default(OFFICIAL)
-  
-  lesson           Lesson?            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  creator          User?              @relation("CreatedQuestions", fields: [createdById], references: [id], onDelete: Cascade)
-  attempts         Attempt[]          // camelCase - ĐÚNG
-  exerciseQuestions ExerciseQuestion[] // camelCase - ĐÚNG
+  id                String             @id @default(cuid())
+  type              QType
+  prompt            String
+  concept           String
+  level             Level?
+  lessonId          String?
+  explain           String?
+  data              Json
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdById       String?
+  isPublic          Boolean            @default(false)
+  source            ContentSource      @default(OFFICIAL)
+
+  lesson            Lesson?            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  creator           User?              @relation("CreatedQuestions", fields: [createdById], references: [id], onDelete: Cascade)
+  attempts          Attempt[]
+  exerciseQuestions ExerciseQuestion[]
+
+  // Reverse link from LessonBlock (optional)
+  usedInBlocks      LessonBlock[]
 
   @@index([concept])
   @@index([createdById])
@@ -105,20 +124,20 @@ model Question {
 }
 
 model Exercise {
-  id               String             @id @default(cuid())
-  title            String
-  description      String?
-  lessonId         String?
-  sortOrder        Int                @default(0)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  createdById      String?
-  isPublic         Boolean            @default(false)
-  source           ContentSource      @default(OFFICIAL)
-  
-  lesson           Lesson?            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  creator          User?              @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Cascade)
-  exerciseQuestions ExerciseQuestion[] // camelCase - ĐÚNG
+  id                String             @id @default(cuid())
+  title             String
+  description       String?
+  lessonId          String?
+  sortOrder         Int                @default(0)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdById       String?
+  isPublic          Boolean            @default(false)
+  source            ContentSource      @default(OFFICIAL)
+
+  lesson            Lesson?            @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  creator           User?              @relation("CreatedExercises", fields: [createdById], references: [id], onDelete: Cascade)
+  exerciseQuestions ExerciseQuestion[]
 
   @@index([createdById])
   @@index([lessonId, sortOrder])
@@ -131,7 +150,7 @@ model ExerciseQuestion {
   questionId String
   sortOrder  Int      @default(0)
   createdAt  DateTime @default(now())
-  
+
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
@@ -156,10 +175,10 @@ model User {
   soundEnabled       Boolean    @default(true)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
-  
-  attempts          Attempt[]  // camelCase - ĐÚNG
-  createdExercises  Exercise[] @relation("CreatedExercises")
-  createdQuestions  Question[] @relation("CreatedQuestions")
+
+  attempts          Attempt[]
+  createdExercises  Exercise[]  @relation("CreatedExercises")
+  createdQuestions  Question[]  @relation("CreatedQuestions")
 
   @@index([currentUnit])
   @@index([email])
@@ -174,7 +193,7 @@ model Attempt {
   isCorrect  Boolean
   timeSpent  Int?
   createdAt  DateTime @default(now())
-  
+
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
@@ -182,4 +201,27 @@ model Attempt {
   @@index([userId, createdAt])
   @@index([userId])
   @@index([userId, isCorrect])
+}
+
+// ==============================
+// NEW MODEL: LessonBlock
+// ==============================
+model LessonBlock {
+  id         String           @id @default(cuid())
+  lessonId   String
+  type       LessonBlockType
+  order      Int              @default(0)
+  data       Json
+
+  // Optional: reuse Question engine for MiniQuiz
+  questionId String?
+  question   Question?        @relation(fields: [questionId], references: [id], onDelete: SetNull)
+
+  lesson     Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([lessonId, order])
+  @@index([type])
 }
