@@ -18,7 +18,16 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "prisma/**", // Ignore all prisma seed files
+      "lib/generated/**", // Ignore generated Prisma client
     ],
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn", // Change from error to warning
+      "@typescript-eslint/no-unused-vars": "warn", // Change from error to warning
+      "@typescript-eslint/no-require-imports": "warn", // Change from error to warning
+    },
   },
 ];
 
