@@ -201,6 +201,8 @@ export async function POST(request: Request) {
 
 📌 CHỦ ĐỀ: "${exerciseName}"
 📋 CHI TIẾT THÊM: ${additionalRequirements || 'Không có - bạn tự do sáng tạo!'}
+🎯 LOẠI CÂU HỎI: ${selectedTypes.join(', ')}
+🎚️ ĐỘ KHÓ: ${difficulty || 'A1'}
 
 🎯 CÁCH TẠO CÂU HỎI:
 - User muốn luyện tập về "${exerciseName}"
@@ -213,8 +215,44 @@ export async function POST(request: Request) {
 - "Present Simple" → Thì hiện tại đơn
 - "Daily activities" → Hoạt động hàng ngày (tự chọn ngữ pháp phù hợp)
 
-// ...existing code...
-`
+📊 CẤU TRÚC TRẢ VỀ:
+{
+  "questions": [
+    {
+      "type": "MCQ" | "CLOZE" | "ORDER" | "TRANSLATE",
+      "prompt": "Câu hỏi rõ ràng",
+      "concept": "grammar_topic",
+      "level": "A1" | "A2" | "B1" | "B2",
+      "explain": "Giải thích ngắn gọn bằng tiếng Việt",
+      "data": {
+        // MCQ: 
+        "choices": ["choice1", "choice2", "choice3", "choice4"],
+        "answerIndex": 1
+        
+        // CLOZE:
+        "template": "He {{1}} to school every day",
+        "answers": ["goes"]
+        
+        // ORDER:
+        "tokens": ["I", "go", "to", "school", "every", "day"]
+        
+        // TRANSLATE:
+        "vietnameseText": "Tôi đi học mỗi ngày",
+        "correctAnswer": "I go to school every day"
+      }
+    }
+  ]
+}
+
+✨ YÊU CẦU:
+- Tạo chính xác ${questionCount} câu hỏi
+- Phân bổ đều các loại: ${selectedTypes.join(', ')}
+- Nội dung thực tế, không dùng placeholder
+- MCQ có 4 lựa chọn, 1 đáp án đúng
+- CLOZE dùng {{1}}, {{2}} cho chỗ trống
+- ORDER trộn thứ tự từ
+- TRANSLATE từ tiếng Việt sang tiếng Anh
+- Chỉ trả về JSON, không giải thích thêm`
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
