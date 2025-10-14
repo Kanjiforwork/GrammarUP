@@ -49,53 +49,70 @@ export async function GET() {
         },
         exerciseQuestions: {
           include: {
-            question: true
+            question: {
+              select: {
+                id: true
+              }
+            }
           }
         }
       },
     })
 
-    // For each exercise, calculate latest score
-    const exercisesWithScores = await Promise.all(exercises.map(async (exercise) => {
+    // ✅ OPTIMIZATION: Fetch ALL user attempts in ONE query
+    const allQuestionIds = exercises.flatMap(ex => 
+      ex.exerciseQuestions.map(eq => eq.question.id)
+    )
+
+    const allAttempts = allQuestionIds.length > 0 
+      ? await prisma.attempt.findMany({
+          where: {
+            userId,
+            questionId: { in: allQuestionIds }
+          },
+          select: {
+            questionId: true,
+            isCorrect: true,
+            createdAt: true
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        })
+      : []
+
+    // Group attempts by question for fast lookup
+    const attemptsByQuestion = new Map<string, typeof allAttempts>()
+    for (const attempt of allAttempts) {
+      if (!attemptsByQuestion.has(attempt.questionId)) {
+        attemptsByQuestion.set(attempt.questionId, [])
+      }
+      attemptsByQuestion.get(attempt.questionId)!.push(attempt)
+    }
+
+    // ✅ OPTIMIZATION: Calculate scores without additional queries
+    const exercisesWithScores = exercises.map((exercise) => {
       let latestScore = null
       
       // Get all question IDs in this exercise
       const questionIds = exercise.exerciseQuestions.map(eq => eq.question.id)
       
       if (questionIds.length > 0) {
-        // Get the latest attempt timestamp for this exercise
-        const latestAttempt = await prisma.attempt.findFirst({
-          where: {
-            userId,
-            questionId: { in: questionIds }
-          },
-          orderBy: {
-            createdAt: 'desc'
-          },
-          select: {
-            createdAt: true
-          }
-        })
+        // Find latest attempt across all questions in this exercise
+        const exerciseAttempts = questionIds
+          .flatMap(qId => attemptsByQuestion.get(qId) || [])
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
-        if (latestAttempt) {
+        if (exerciseAttempts.length > 0) {
+          const latestAttempt = exerciseAttempts[0]
+          
           // Get all attempts from that session (within 1 hour window)
           const sessionStart = new Date(latestAttempt.createdAt.getTime() - 60 * 60 * 1000)
           const sessionEnd = new Date(latestAttempt.createdAt.getTime() + 60 * 60 * 1000)
           
-          const sessionAttempts = await prisma.attempt.findMany({
-            where: {
-              userId,
-              questionId: { in: questionIds },
-              createdAt: {
-                gte: sessionStart,
-                lte: sessionEnd
-              }
-            },
-            select: {
-              isCorrect: true,
-              questionId: true
-            }
-          })
+          const sessionAttempts = exerciseAttempts.filter(a => 
+            a.createdAt >= sessionStart && a.createdAt <= sessionEnd
+          )
 
           // Calculate score (count unique correct questions)
           const correctQuestions = new Set(
@@ -118,7 +135,7 @@ export async function GET() {
         ...exercise,
         latestScore
       }
-    }))
+    })
 
     console.log('✅ Found exercises:', exercisesWithScores.length)
     return NextResponse.json(exercisesWithScores)
