@@ -33,7 +33,6 @@
   - Alternative translations
 
 ### 🎨 Beautiful UI/UX
-- **Ocean Theme**: Animated ocean background with waves, clouds, and sun
   - Customizable in settings (can toggle on/off)
   - Smooth CSS animations
   - Responsive design
@@ -65,7 +64,6 @@
 
 ### Animation & Effects
 - **Canvas Confetti** - Celebration animations
-- **Custom CSS Animations** - Ocean waves, floating clouds, pulse effects
 
 ## 📁 Project Structure
 
@@ -95,7 +93,6 @@ grammar-up/
 │   ├── ClozeQuestion.tsx     # Fill-in-blank component
 │   ├── OrderQuestion.tsx     # Word order component
 │   ├── TranslateQuestion.tsx # Translation component
-│   ├── OceanBackground.tsx   # Animated ocean bg
 │   ├── app-sidebar.tsx       # Sidebar navigation
 │   └── ui/                   # Reusable UI components
 │
@@ -238,11 +235,6 @@ grammar-up/
 
 ## 🎨 Customization
 
-### Ocean Background
-
-Users can toggle the ocean background in **Settings**:
-- **Enabled**: Beautiful animated ocean with waves, clouds, and sun
-- **Disabled**: Clean white background for distraction-free learning
 
 The setting is saved to:
 - **localStorage** for quick access
@@ -311,7 +303,6 @@ This project is licensed under the MIT License.
 
 ## 🐛 Known Issues
 
-- Ocean background may affect performance on older devices
 - AI tutor responses require active internet connection
 
 ## 🗺️ Roadmap
