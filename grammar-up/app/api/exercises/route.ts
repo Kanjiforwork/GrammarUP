@@ -194,70 +194,7 @@ export async function POST(request: Request) {
         )
       }
 
-      // ✅ VALIDATION: Check if the request is clear and specific
-      console.log('🔍 Validating exercise request clarity...')
-      
-      const validationPrompt = `Bạn là chuyên gia đánh giá yêu cầu tạo bài tập tiếng Anh. Hãy phân tích xem yêu cầu sau có ĐỦ RÕ RÀNG để tạo bài tập không:
-
-📌 TÊN BÀI TẬP: "${exerciseName}"
-📋 YÊU CẦU CỤ THỂ: "${additionalRequirements}"
-
-Đánh giá theo các tiêu chí:
-1. Có đề cập rõ chủ đề ngữ pháp/từ vựng không? (vd: "present simple", "conditionals", "vocabulary about work")
-2. Yêu cầu có cụ thể không? Hay quá mơ hồ, chung chung?
-3. Có phải là nonsense, vô nghĩa, hoặc không liên quan đến tiếng Anh không?
-
-VÍ DỤ YÊU CẦU TỐT ✅:
-- "Present Simple - Thì hiện tại đơn" + "Tập trung vào động từ thường, câu khẳng định và phủ định"
-- "Conditional Type 0" + "Về sự thật hiển nhiên, dùng if clause"
-- "Vocabulary about Daily Routine" + "Từ vựng về hoạt động hàng ngày"
-
-VÍ DỤ YÊU CẦU XẤU ❌:
-- "abc xyz" (nonsense)
-- "English" (quá chung chung)
-- "grammar" (không cụ thể)
-- "test" (mơ hồ)
-- "123 456" (vô nghĩa)
-- "" (trống rỗng)
-
-Trả về JSON:
-{
-  "isValid": true/false,
-  "reason": "Lý do ngắn gọn tại sao hợp lệ/không hợp lệ",
-  "suggestion": "Gợi ý cách cải thiện nếu không hợp lệ (hoặc null nếu hợp lệ)"
-}`
-
-      const validationCompletion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'Bạn là chuyên gia đánh giá yêu cầu. Hãy strict và chỉ chấp nhận yêu cầu rõ ràng, cụ thể. Trả về JSON.'
-          },
-          {
-            role: 'user',
-            content: validationPrompt
-          }
-        ],
-        temperature: 0.3,
-        response_format: { type: 'json_object' }
-      })
-
-      const validationResult = JSON.parse(validationCompletion.choices[0].message.content || '{}')
-      
-      if (!validationResult.isValid) {
-        console.log('❌ Exercise request rejected:', validationResult.reason)
-        return NextResponse.json(
-          { 
-            error: '❌ Yêu cầu không đủ rõ ràng để tạo bài tập',
-            reason: validationResult.reason,
-            suggestion: validationResult.suggestion || 'Vui lòng mô tả cụ thể chủ đề ngữ pháp hoặc từ vựng bạn muốn luyện tập. Ví dụ: "Present Simple", "Conditional Type 0", "Vocabulary about Work"...'
-          },
-          { status: 400 }
-        )
-      }
-      
-      console.log('✅ Exercise request validated:', validationResult.reason)
+      // ✅ REMOVED strict validation - let AI generate and let user judge quality
 
       // Build AI prompt
       const prompt = `Bạn là một chuyên gia tạo đề thi tiếng Anh. Hãy tạo ${questionCount} câu hỏi cho bài tập với thông tin sau:
@@ -540,7 +477,7 @@ Return JSON:
           }
 
           const answerCompletion = await openai.chat.completions.create({
-            model: 'gpt-4o', // ← Upgraded to GPT-4o (not mini)
+            model: 'gpt-4o',
             messages: [
               {
                 role: 'system',
@@ -551,7 +488,7 @@ Return JSON:
                 content: answerPrompt
               }
             ],
-            temperature: 0.1, // Very low for consistency
+            temperature: 0.1,
             response_format: { type: 'json_object' }
           })
 
@@ -628,6 +565,7 @@ Return JSON:
     }
 
     // Step 3: Create exercise with questions in a single transaction
+    // ✅ OPTIMIZED: Use batch create to reduce transaction time
     const exercise = await prisma.$transaction(async (tx) => {
       // Create exercise WITH createdById
       const newExercise = await tx.exercise.create({
@@ -637,39 +575,54 @@ Return JSON:
           lessonId: lessonId || null,
           source: 'USER_CREATED',
           isPublic: false,
-          createdById: userId, // ✅ LƯU USER ID
+          createdById: userId,
         }
       })
 
-      // Create questions and link to exercise
-      for (let i = 0; i < questionsData.length; i++) {
-        const qData = questionsData[i]
-        
-        const question = await tx.question.create({
-          data: {
-            type: qData.type,
-            prompt: qData.prompt,
-            concept: qData.concept || 'general',
-            level: qData.level || difficulty || 'A1',
-            lessonId: lessonId || null,
-            explain: qData.explain || null,
-            data: qData.data,
-            source: 'USER_CREATED',
-            isPublic: false,
-            createdById: userId, // ✅ LƯU USER ID cho questions
-          }
-        })
+      // ✅ FIXED: Use createMany instead of createManyAndReturn for Vercel compatibility
+      const questionsToCreate = questionsData.map((qData, index) => ({
+        id: `${newExercise.id}_q${index + 1}_${Date.now()}`, // Generate unique IDs
+        type: qData.type,
+        prompt: qData.prompt,
+        concept: qData.concept || 'general',
+        level: qData.level || difficulty || 'A1',
+        lessonId: lessonId || null,
+        explain: qData.explain || null,
+        data: qData.data,
+        source: 'USER_CREATED' as const,
+        isPublic: false,
+        createdById: userId,
+      }))
 
-        await tx.exerciseQuestion.create({
-          data: {
-            exerciseId: newExercise.id,
-            questionId: question.id,
-            sortOrder: i + 1,
-          }
-        })
-      }
+      // Create all questions in batch
+      await tx.question.createMany({
+        data: questionsToCreate,
+        skipDuplicates: true
+      })
+
+      // ✅ Fetch created questions to get their actual IDs
+      const createdQuestions = await tx.question.findMany({
+        where: {
+          id: { in: questionsToCreate.map(q => q.id) }
+        },
+        orderBy: { createdAt: 'asc' }
+      })
+
+      // ✅ OPTIMIZED: Batch create exercise-question relationships
+      const exerciseQuestionData = createdQuestions.map((question, index) => ({
+        exerciseId: newExercise.id,
+        questionId: question.id,
+        sortOrder: index + 1,
+      }))
+
+      await tx.exerciseQuestion.createMany({
+        data: exerciseQuestionData
+      })
 
       return newExercise
+    }, {
+      timeout: 30000, // ✅ Increase timeout to 30s for Vercel serverless
+      maxWait: 10000, // ✅ Increase maxWait to 10s
     })
 
     console.log('🎉 Exercise created successfully:', exercise.id)
