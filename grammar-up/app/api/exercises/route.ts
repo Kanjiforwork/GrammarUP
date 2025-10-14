@@ -197,61 +197,76 @@ export async function POST(request: Request) {
       // ✅ REMOVED strict validation - let AI generate and let user judge quality
 
       // Build AI prompt
-      const prompt = `Bạn là chuyên gia tạo đề thi tiếng Anh. Hãy tạo ${questionCount} câu hỏi cho bài tập:
+      const prompt = `Bạn là chuyên gia tạo đề thi tiếng Anh. Hãy tạo CHÍNH XÁC ${questionCount} câu hỏi cho bài tập:
 
-📌 CHỦ ĐỀ: "${exerciseName}"
-📋 CHI TIẾT THÊM: ${additionalRequirements || 'Không có - bạn tự do sáng tạo!'}
-🎯 LOẠI CÂU HỎI: ${selectedTypes.join(', ')}
+🎯 CHỦ ĐỀ CHÍNH: "${exerciseName}"
+📝 YÊU CẦU CHI TIẾT: ${additionalRequirements || 'Không có yêu cầu đặc biệt'}
+📊 LOẠI CÂU HỎI CẦN TẠO: ${selectedTypes.join(', ')}
 🎚️ ĐỘ KHÓ: ${difficulty || 'A1'}
 
-🎯 CÁCH TẠO CÂU HỎI:
-- User muốn luyện tập về "${exerciseName}"
-- Nếu user cho thêm chi tiết (vd: "tập trung vào cấu trúc if...then") → làm theo yêu cầu đó
-- Nếu user chỉ cho tiêu đề ngắn (vd: "if 0", "present simple") → bạn tự phát triển câu hỏi phù hợp
-- Tạo câu hỏi thực tế, đa dạng tình huống, giúp user luyện tập hiệu quả
+🔥 QUAN TRỌNG - ĐỌC KỸ:
+- Tất cả ${questionCount} câu hỏi phải TRỰC TIẾP liên quan đến "${exerciseName}"
+- Nếu "${exerciseName}" là ngữ pháp (vd: "Present Simple", "Past Perfect") → tạo câu hỏi về chính xác thì đó
+- Nếu "${exerciseName}" là chủ đề (vd: "Daily Activities", "Food") → tạo câu hỏi về từ vựng và cấu trúc liên quan
+- Nếu có yêu cầu chi tiết → làm theo CHÍNH XÁC yêu cầu đó
 
-💡 VÍ DỤ CÁCH HIỂU CHỦ ĐỀ:
-- "if 0" hoặc "conditional 0" → Câu điều kiện loại 0
-- "Present Simple" → Thì hiện tại đơn
-- "Daily activities" → Hoạt động hàng ngày (tự chọn ngữ pháp phù hợp)
+💡 VÍ DỤ MINH HỌA:
+- Nếu chủ đề "Present Simple" → tạo câu về S + V(s/es), Do/Does, thói quen
+- Nếu chủ đề "Past Perfect" → tạo câu về had + V3, before/after, sequence
+- Nếu chủ đề "Conditional 0" → tạo câu về If + Present, Present (sự thật hiển nhiên)
+- Nếu chủ đề "Food and Drinks" → tạo câu về từ vựng thức ăn, đồ uống
 
-📊 CẤU TRÚC TRẢ VỀ:
+🎯 PHÂN BỔ CÂU HỎI:
+- Tổng cộng: ${questionCount} câu
+- Phân bổ đều theo tỷ lệ: ${selectedTypes.map(type => {
+  const count = Math.ceil(questionCount / selectedTypes.length);
+  return `${type}: ${count} câu`;
+}).join(', ')}
+
+📋 CẤU TRÚC JSON TRẢ VỀ:
 {
   "questions": [
     {
       "type": "MCQ" | "CLOZE" | "ORDER" | "TRANSLATE",
-      "prompt": "Câu hỏi rõ ràng",
-      "concept": "grammar_topic",
-      "level": "A1" | "A2" | "B1" | "B2",
+      "prompt": "Câu hỏi cụ thể về ${exerciseName}",
+      "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
+      "level": "${difficulty || 'A1'}",
       "explain": "Giải thích ngắn gọn bằng tiếng Việt",
       "data": {
-        // MCQ: 
-        "choices": ["choice1", "choice2", "choice3", "choice4"],
-        "answerIndex": 1
+        // MCQ (Trắc nghiệm):
+        "choices": ["đáp án 1", "đáp án 2", "đáp án 3", "đáp án 4"],
+        "answerIndex": 0
         
-        // CLOZE:
-        "template": "He {{1}} to school every day",
-        "answers": ["goes"]
+        // CLOZE (Điền từ):
+        "template": "Câu có {{1}} chỗ trống về ${exerciseName}",
+        "answers": ["từ đúng"]
         
-        // ORDER:
-        "tokens": ["I", "go", "to", "school", "every", "day"]
+        // ORDER (Sắp xếp từ):
+        "tokens": ["các", "từ", "cần", "sắp", "xếp", "về", "${exerciseName}"]
         
-        // TRANSLATE:
-        "vietnameseText": "Tôi đi học mỗi ngày",
-        "correctAnswer": "I go to school every day"
+        // TRANSLATE (Dịch):
+        "vietnameseText": "Câu tiếng Việt liên quan ${exerciseName}",
+        "correctAnswer": "Câu tiếng Anh tương ứng"
       }
     }
   ]
 }
 
-✨ YÊU CẦU:
-- Tạo chính xác ${questionCount} câu hỏi
-- Phân bổ đều các loại: ${selectedTypes.join(', ')}
-- Nội dung thực tế, không dùng placeholder
-- MCQ có 4 lựa chọn, 1 đáp án đúng
-- CLOZE dùng {{1}}, {{2}} cho chỗ trống
-- ORDER trộn thứ tự từ
-- TRANSLATE từ tiếng Việt sang tiếng Anh
+✅ CHECKLIST BẮT BUỘC:
+□ Tất cả câu hỏi liên quan trực tiếp đến "${exerciseName}"
+□ Có đúng ${questionCount} câu hỏi
+□ Phân bổ đều các loại: ${selectedTypes.join(', ')}
+□ MCQ có 4 lựa chọn với 1 đáp án đúng
+□ CLOZE dùng {{1}}, {{2}} cho chỗ trống
+□ ORDER có từ bị trộn lẫn
+□ TRANSLATE từ tiếng Việt sang tiếng Anh
+□ Mức độ phù hợp với ${difficulty || 'A1'}
+□ Có explain cho mỗi câu
+□ Concept = "${exerciseName.toLowerCase().replace(/\s+/g, '_')}"
+
+🚨 LƯU Ý CUỐI:
+- KHÔNG tạo câu hỏi chung chung không liên quan
+- KHÔNG dùng placeholder như "example", "sample"
 - Chỉ trả về JSON, không giải thích thêm`
 
       const completion = await openai.chat.completions.create({

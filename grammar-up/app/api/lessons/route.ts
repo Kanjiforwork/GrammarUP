@@ -7,10 +7,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-// ✅ Add cache configuration
-export const revalidate = 60 // Revalidate every 60 seconds
-export const dynamic = 'force-dynamic' // Always get fresh data for user-specific content
-
 // GET /api/lessons - Fetch all lessons
 export async function GET() {
   try {
@@ -20,36 +16,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { email: user.email }
-    })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    const userId = dbUser.id
-
-    // ✅ OPTIMIZED: Only select necessary fields, avoid loading heavy blocks data
     const lessons = await prisma.lesson.findMany({
-      where: {
-        OR: [
-          { createdById: userId },
-          { source: 'OFFICIAL' }
-        ]
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        source: true,
-        createdAt: true,
+      include: {
         unit: {
           select: {
             title: true
           }
         },
+        blocks: true,
         _count: {
           select: {
             blocks: true,
@@ -63,12 +37,7 @@ export async function GET() {
       ]
     })
 
-    // ✅ Add cache headers for better performance
-    return NextResponse.json(lessons, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-      }
-    })
+    return NextResponse.json(lessons)
   } catch (error) {
     console.error('Error fetching lessons:', error)
     return NextResponse.json(
@@ -101,98 +70,121 @@ export async function POST(request: NextRequest) {
 
     console.log('📝 Creating lesson with AI:', { lessonName, blockCount, difficulty })
 
-    // ✅ REMOVED strict validation - let AI generate and let user judge quality
-
     // Step 1: Generate lesson content using AI
-    const prompt = `Bạn là chuyên gia tạo bài học tiếng Anh. Hãy tạo một bài học về:
+    const prompt = `Bạn là một giáo viên tiếng Anh chuyên nghiệp. Tạo nội dung bài học "${lessonName}" với ${blockCount} blocks.
 
-📌 CHỦ ĐỀ: "${lessonName}"
-📝 MÔ TẢ: "${lessonDescription}"
-📋 YÊU CẦU THÊM: ${additionalRequirements || 'Không có - bạn tự do sáng tạo!'}
+Thông tin:
+- Tên bài học: ${lessonName}
+- Mô tả: ${lessonDescription}
+- Độ khó: ${difficulty}
+- Yêu cầu thêm: ${additionalRequirements || 'Không có'}
 
-💡 HƯỚNG DẪN:
-- User muốn học về "${lessonName}"
-- Nếu user cho chi tiết → làm theo yêu cầu đó
-- Nếu user chỉ cho tiêu đề ngắn → bạn tự phát triển nội dung hữu ích
-- Tạo bài học thực tế, dễ hiểu, sinh động
+CẤU TRÚC BÀI HỌC (${blockCount} blocks):
 
-📊 CẤU TRÚC BÀI HỌC:
-Bài học có ${blockCount || 4} blocks theo thứ tự:
+1. Block INTRO (order: 1):
+- title: Tiêu đề bài học (giữ nguyên "${lessonName}")
+- subtitle: Mô tả ngắn gọn (1 câu)
+- kahootHint: Gợi ý warm-up (ví dụ: "3 câu đúng/sai về...")
+- cta: "Bắt đầu học"
 
-1. **INTRO** (Giới thiệu):
-   - Chào mừng học viên
-   - Giải thích học viên sẽ học được gì
-   - Tạo động lực
+2. Block WHAT (order: 2):
+- heading: "Dùng để làm gì?"
+- content: Giải thích chi tiết công dụng/mục đích sử dụng (2-3 câu)
+- examples: Array gồm 2-3 ví dụ, mỗi example có format:
+  { en: "câu tiếng Anh", vi: "câu tiếng Việt" }
+- notes: Array gồm 1-2 lưu ý quan trọng
 
-2. **WHAT** (Lý thuyết):
-   - Giải thích kiến thức cốt lõi
-   - Ví dụ minh họa
-   - Cấu trúc/công thức (nếu có)
+3. Block HOW (order: 3):
+- heading: "Cấu trúc và cách sử dụng"
+- content: Giải thích cấu trúc ngữ pháp với format rõ ràng (sử dụng \\n cho xuống dòng)
+  Ví dụ: "Khẳng định: S + V(s/es)\\nPhủ định: S + do/does + not + V\\nNghi vấn: Do/Does + S + V?"
+- notes: Array gồm 2-4 quy tắc/lưu ý ngữ pháp quan trọng
+- examples: Array gồm 2-3 ví dụ minh họa cấu trúc:
+  { en: "câu tiếng Anh", vi: "câu tiếng Việt" }
 
-3. **HOW** (Thực hành):
-   - Hướng dẫn vận dụng
-   - Các bước thực hiện
-   - Tips & tricks
+4. Block REMIND (order: 4):
+- question: Câu hỏi ôn tập kiến thức vừa học (về cấu trúc hoặc cách dùng)
+- options: Array gồm 4 đáp án
+- answerIndex: Index của đáp án đúng (0-3)
+- explain: Giải thích tại sao đáp án đó đúng (2-3 câu)
 
-4. **REMIND** (Nhắc nhở):
-   - Tổng kết điểm quan trọng
-   - Lời khuyên cuối cùng
-   - Động viên
+5-${blockCount}. Các block MINIQUIZ (order: 5 đến ${blockCount}):
+Tạo ${blockCount - 4} câu hỏi trắc nghiệm để luyện tập, mỗi block có:
+- question: Câu hỏi cụ thể (điền từ, chọn đáp án đúng, tìm lỗi sai...)
+- options: Array gồm 4 đáp án
+- answerIndex: Index của đáp án đúng (0-3)
+- explain: Giải thích đáp án (1-2 câu)
 
-📄 ĐỊNH DẠNG JSON TRẢ VỀ:
+Các câu hỏi MINIQUIZ phải:
+- Tăng dần độ khó
+- Đa dạng (câu khẳng định, phủ định, nghi vấn, lựa chọn từ đúng...)
+- Phù hợp độ khó ${difficulty}
+- Sát với nội dung đã dạy
+
+QUAN TRỌNG:
+- Nội dung phải cụ thể, chi tiết, không dùng placeholder
+- Ví dụ phải thực tế, dễ hiểu
+- Câu hỏi phải có giá trị luyện tập thực sự
+- Đáp án phải chính xác 100%
+
+Trả về CHÍNH XÁC JSON với cấu trúc:
 {
   "blocks": [
     {
       "type": "INTRO",
       "order": 1,
-      "data": {
-        "title": "Welcome to...",
-        "content": "Detailed introduction text...",
-        "examples": []
-      }
+      "data": { "title": "...", "subtitle": "...", "kahootHint": "...", "cta": "Bắt đầu học" }
     },
     {
       "type": "WHAT",
       "order": 2,
       "data": {
-        "title": "What is...",
-        "content": "Theory explanation...",
-        "examples": ["Example 1", "Example 2"]
+        "heading": "Dùng để làm gì?",
+        "content": "...",
+        "examples": [{"en": "...", "vi": "..."}, ...],
+        "notes": ["...", "..."]
       }
     },
     {
       "type": "HOW",
       "order": 3,
       "data": {
-        "title": "How to use...",
-        "content": "Step by step guide...",
-        "examples": ["Usage example 1"]
+        "heading": "Cấu trúc và cách sử dụng",
+        "content": "...",
+        "notes": ["...", "...", "..."],
+        "examples": [{"en": "...", "vi": "..."}, ...]
       }
     },
     {
       "type": "REMIND",
       "order": 4,
       "data": {
-        "title": "Remember",
-        "content": "Key takeaways...",
-        "examples": []
+        "question": "...",
+        "options": ["...", "...", "...", "..."],
+        "answerIndex": 0,
+        "explain": "..."
+      }
+    },
+    {
+      "type": "MINIQUIZ",
+      "order": 5,
+      "data": {
+        "question": "...",
+        "options": ["...", "...", "...", "..."],
+        "answerIndex": 0,
+        "explain": "..."
       }
     }
+    // ... more MINIQUIZ blocks
   ]
-}
-
-✨ LƯU Ý:
-- Nội dung bằng Tiếng Anh (hoặc theo ngôn ngữ user yêu cầu)
-- Dễ hiểu, thực tế, có giá trị học tập
-- Ví dụ cụ thể, không dùng placeholder
-- Chỉ trả về JSON, không giải thích thêm`
+}`
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: 'Bạn là giáo viên tiếng Anh chuyên nghiệp. Tạo nội dung bài học sinh động, dễ hiểu, có giá trị thực tế. Luôn tạo nội dung ngay cả khi yêu cầu đơn giản - hãy sáng tạo và phát triển thành bài học chất lượng. Chỉ trả về JSON.'
+          content: 'Bạn là giáo viên tiếng Anh chuyên nghiệp với kinh nghiệm soạn giáo án. Tạo nội dung bài học chi tiết, cụ thể, có giá trị giáo dục cao. Chỉ trả về JSON, không giải thích thêm.'
         },
         {
           role: 'user',
@@ -222,38 +214,9 @@ Bài học có ${blockCount || 4} blocks theo thứ tự:
       }
     }
 
-    // ✅ Add validation helper for lesson blocks
-    function validateLessonBlock(block: any, index: number): { isValid: boolean; error?: string } {
-      if (!block.type || !block.order || !block.data) {
-        return { isValid: false, error: `Block ${index + 1}: Thiếu type, order hoặc data` }
-      }
-    
-      const validTypes = ['INTRO', 'WHAT', 'HOW', 'NOTE', 'REMIND', 'MINIQUIZ']
-      if (!validTypes.includes(block.type)) {
-        return { isValid: false, error: `Block ${index + 1}: Loại "${block.type}" không hợp lệ` }
-      }
-    
-      // Validate data structure based on type
-      if (!block.data.title && !block.data.content) {
-        return { isValid: false, error: `Block ${index + 1}: Cần có title hoặc content` }
-      }
-    
-      return { isValid: true }
-    }
-
     // Step 3: Create lesson and blocks in database
-    // ✅ OPTIMIZED: Use shorter transaction with proper validation
     const lesson = await prisma.$transaction(async (tx) => {
-      // Get user from database
-      const dbUser = await tx.user.findUnique({
-        where: { email: user.email }
-      })
-
-      if (!dbUser) {
-        throw new Error('User not found')
-      }
-
-      // Get or create unit for user-generated lessons
+      // Get or create unit
       let unit = await tx.unit.findFirst({
         where: { title: 'Generated Lessons' }
       })
@@ -268,49 +231,29 @@ Bài học có ${blockCount || 4} blocks theo thứ tự:
         })
       }
 
-      // ✅ Create lesson WITH createdById and source
+      // Create lesson
       const newLesson = await tx.lesson.create({
         data: {
           title: lessonName.trim(),
           description: lessonDescription.trim(),
           unitId: unit.id,
-          sortOrder: 0,
-          createdById: dbUser.id,
-          source: 'USER_CREATED',
-          isPublic: false
+          sortOrder: 0
         }
       })
 
-      // ✅ FIXED: Validate blocks and ensure proper enum types
-      const validatedBlocks = blocks.map((block: any, index: number) => {
-        // Validate block structure
-        const validation = validateLessonBlock(block, index)
-        if (!validation.isValid) {
-          throw new Error(validation.error)
-        }
+      // Create all blocks
+      const blockData = blocks.map((block: any) => ({
+        lessonId: newLesson.id,
+        type: block.type,
+        order: block.order,
+        data: block.data
+      }))
 
-        // Ensure valid enum type
-        const blockType = ['INTRO', 'WHAT', 'HOW', 'NOTE', 'REMIND', 'MINIQUIZ'].includes(block.type) 
-          ? block.type 
-          : 'WHAT'
-
-        return {
-          lessonId: newLesson.id,
-          type: blockType as any, // Cast to enum
-          order: block.order,
-          data: block.data
-        }
-      })
-
-      // ✅ OPTIMIZED: Use createMany for better performance
       await tx.lessonBlock.createMany({
-        data: validatedBlocks
+        data: blockData
       })
 
       return newLesson
-    }, {
-      timeout: 15000, // ✅ Increase timeout to 15s for Vercel
-      maxWait: 5000,  // ✅ Max wait for connection
     })
 
     // Step 4: Return created lesson with blocks
