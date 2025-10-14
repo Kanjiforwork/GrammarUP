@@ -261,17 +261,18 @@ export default function LessonClient({
 
   return (
     <div className="w-full min-h-screen flex flex-col relative bg-gray-50">
-      {/* Top bar */}
-      <div className="w-full p-4 flex items-center gap-4 shadow-sm relative z-10 bg-white border-b border-gray-200">
+      {/* Top bar - FIXED: Responsive padding and sizes */}
+      <div className="w-full p-3 sm:p-4 flex items-center gap-2 sm:gap-4 shadow-sm relative z-10 bg-white border-b border-gray-200">
         {/* Close button */}
         <Link 
           href="/lessons" 
-          className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-all"
+          className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-all"
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
+            width="20" 
+            height="20"
+            className="sm:w-6 sm:h-6"
             viewBox="0 0 24 24" 
             fill="none" 
             stroke="currentColor" 
@@ -286,11 +287,11 @@ export default function LessonClient({
         
         {/* Progress bar */}
         <div className="flex-1 max-w-2xl mx-auto">
-          <Progress value={progress} className="h-3 bg-gray-100 [&>div]:bg-teal-500" />
+          <Progress value={progress} className="h-2 sm:h-3 bg-gray-100 [&>div]:bg-teal-500" />
         </div>
         
         {/* Block counter */}
-        <div className="w-auto px-4 py-2 bg-gray-100 rounded-full text-sm font-medium text-gray-700">
+        <div className="w-auto px-2.5 sm:px-4 py-1.5 sm:py-2 bg-gray-100 rounded-full text-xs sm:text-sm font-medium text-gray-700">
           {currentBlockIndex + 1} / {blocks.length}
         </div>
       </div>
@@ -300,14 +301,14 @@ export default function LessonClient({
         {renderBlock()}
       </div>
 
-      {/* Bottom bar - similar to MultipleChoice and ClozeQuestion */}
+      {/* Bottom bar - FIXED: Responsive padding and button sizes */}
       {shouldShowBottomBar() && (
-        <div className="fixed bottom-0 left-0 right-0 w-full p-6 shadow-lg bg-white border-t border-gray-200 z-20">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <div className="fixed bottom-0 left-0 right-0 w-full p-3 sm:p-4 lg:p-6 shadow-lg bg-white border-t border-gray-200 z-20">
+          <div className="max-w-4xl mx-auto flex justify-between items-center gap-3">
             <button
               onClick={handlePrevious}
               disabled={!getNavigationState().canGoBack}
-              className="px-6 py-3 font-semibold text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-xl transition-all disabled:opacity-0 disabled:cursor-not-allowed active:scale-95"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 font-semibold text-sm sm:text-base text-gray-600 hover:text-teal-700 hover:bg-teal-50 rounded-xl transition-all disabled:opacity-0 disabled:cursor-not-allowed active:scale-95"
             >
               QUAY LẠI
             </button>
@@ -315,7 +316,7 @@ export default function LessonClient({
             <button
               onClick={handleNext}
               disabled={!getNavigationState().canGoNext}
-              className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
+              className={`px-6 sm:px-10 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg transition-all ${
                 !getNavigationState().canGoNext
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                   : "bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md active:scale-[0.98]"

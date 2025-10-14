@@ -131,29 +131,29 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       {/* Retry Dialog - z-[60] để stay on top */}
       {showRetryDialog && (
-        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-md">
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 mx-4 max-w-md w-full">
             <div className="flex items-center gap-3 mb-4">
-              <AlertCircle className="w-8 h-8 text-red-500" />
-              <h3 className="text-xl font-bold text-gray-900">Tạo bài học thất bại</h3>
+              <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Tạo bài học thất bại</h3>
             </div>
-            <p className="text-gray-700 mb-2">{error}</p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm sm:text-base text-gray-700 mb-2">{error}</p>
+            <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
               Lần thử: {retryCount + 1}/{MAX_RETRY_ATTEMPTS}
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={handleCancelRetry}
-                className="flex-1 px-4 py-3 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all"
+                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all"
               >
                 Hủy
               </button>
               <button
                 onClick={handleRetry}
-                className="flex-1 px-4 py-3 rounded-xl font-semibold text-white bg-teal-500 hover:bg-teal-600 transition-all"
+                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base text-white bg-teal-500 hover:bg-teal-600 transition-all"
               >
                 Thử lại
               </button>
@@ -163,22 +163,22 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
       )}
 
       {/* Modal Container */}
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 rounded-t-3xl">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-t-2xl sm:rounded-t-3xl z-10">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-                <Bot className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                <Bot className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Tạo bài học mới</h2>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">Tạo bài học mới</h2>
             </div>
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-all disabled:opacity-50"
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-all disabled:opacity-50"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -186,29 +186,29 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
         </div>
 
         {/* Content */}
-        <div className="px-8 py-6">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Error Display */}
           {error && !showRetryDialog && (
-            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-2 sm:gap-3">
+              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-red-900 mb-1">Có lỗi xảy ra</p>
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="text-xs sm:text-sm font-semibold text-red-900 mb-1">Có lỗi xảy ra</p>
+                <p className="text-xs sm:text-sm text-red-700">{error}</p>
               </div>
             </div>
           )}
 
           {/* Loading State */}
           {isSubmitting && (
-            <div className="mb-6 p-6 bg-teal-50 border-2 border-teal-200 rounded-xl">
-              <div className="flex items-center gap-4">
-                <Loader2 className="w-6 h-6 text-teal-600 animate-spin" />
+            <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-teal-50 border-2 border-teal-200 rounded-xl">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 animate-spin" />
                 <div className="flex-1">
-                  <p className="font-semibold text-teal-900 mb-1">
+                  <p className="text-sm sm:text-base font-semibold text-teal-900 mb-1">
                     {loadingStage === 'generating' && 'Đang tạo nội dung bài học...'}
                     {loadingStage === 'uploading' && 'Đang lưu vào database...'}
                   </p>
-                  <p className="text-sm text-teal-700">
+                  <p className="text-xs sm:text-sm text-teal-700">
                     {loadingStage === 'generating' && 'AI đang phân tích và tạo các phần học cho bạn'}
                     {loadingStage === 'uploading' && 'Đang lưu bài học vào hệ thống'}
                   </p>
@@ -218,8 +218,8 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
           )}
 
           {/* Lesson Name */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
               Tên bài học
             </label>
             <input
@@ -228,13 +228,13 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
               onChange={(e) => setLessonName(e.target.value)}
               placeholder="Ví dụ: Present Simple - Thì hiện tại đơn"
               disabled={isSubmitting}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all disabled:opacity-50 disabled:bg-gray-50"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all disabled:opacity-50 disabled:bg-gray-50"
             />
           </div>
 
           {/* Lesson Description */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
               Mô tả bài học
             </label>
             <textarea
@@ -243,13 +243,13 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
               placeholder="Ví dụ: Học cách sử dụng thì hiện tại đơn để diễn tả các hành động thường xuyên, sự thật hiển nhiên..."
               rows={3}
               disabled={isSubmitting}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all resize-none disabled:opacity-50 disabled:bg-gray-50"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all resize-none disabled:opacity-50 disabled:bg-gray-50"
             />
           </div>
 
           {/* Additional Requirements */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
               Yêu cầu thêm (tùy chọn)
             </label>
             <textarea
@@ -258,24 +258,24 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
               placeholder="Ví dụ: Tập trung vào các từ vựng về công việc, bao gồm nhiều ví dụ thực tế..."
               rows={3}
               disabled={isSubmitting}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all resize-none disabled:opacity-50 disabled:bg-gray-50"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-xl focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none transition-all resize-none disabled:opacity-50 disabled:bg-gray-50"
             />
           </div>
 
           {/* AI Mode Content */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Difficulty Level */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
                 Độ khó
               </label>
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
                 {(['A2', 'B1', 'B2', 'C1'] as const).map((level) => (
                   <button
                     key={level}
                     onClick={() => setDifficulty(level)}
                     disabled={isSubmitting}
-                    className={`px-4 py-3 rounded-xl font-semibold text-sm transition-all border-2 disabled:opacity-50 ${difficulty === level
+                    className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all border-2 disabled:opacity-50 ${difficulty === level
                       ? 'bg-teal-50 border-teal-500 text-teal-700'
                       : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
@@ -288,7 +288,7 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
 
             {/* Block Count */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">
                 Số phần học: <span className="text-teal-600">{blockCount}</span>
               </label>
               <input
@@ -305,7 +305,7 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
                 <span>5</span>
                 <span>15</span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-2">
                 Bao gồm: Giới thiệu, Lý thuyết, Ví dụ, Bài tập mini
               </p>
             </div>
@@ -313,28 +313,28 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-6 rounded-b-3xl">
-          <div className="flex gap-3 justify-end">
+        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 rounded-b-2xl sm:rounded-b-3xl z-10">
+          <div className="flex gap-2 sm:gap-3 justify-end">
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-6 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-100 transition-all disabled:opacity-50"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base text-gray-700 hover:bg-gray-100 transition-all disabled:opacity-50"
             >
               Hủy
             </button>
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-8 py-3 rounded-xl font-semibold bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold text-sm sm:text-base bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   <span>Đang tạo...</span>
                 </>
               ) : (
                 <>
-                  <Bot className="w-5 h-5" />
+                  <Bot className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Tạo bài học</span>
                 </>
               )}

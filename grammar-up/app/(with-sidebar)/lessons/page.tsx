@@ -68,48 +68,48 @@ function LessonsPageContent() {
     <>
       <div className="w-full min-h-screen bg-white">
         <div className="border-b border-gray-200">
-          <div className="max-w-5xl mx-auto px-8 py-6">
-            {/* Single Row: Title, Search Bar, Button */}
-            <div className="flex items-center gap-6">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            {/* FIXED: Stack on mobile, single row on desktop */}
+            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-6">
               {/* Left: Title and Count */}
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-semibold text-gray-900">
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
                   Khóa học
                 </h1>
-                <p className="text-sm text-gray-600 mt-0.5">
+                <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
                   {filteredLessons.length} bài học
                 </p>
               </div>
 
-              {/* Center: Search Bar */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              {/* Center: Search Bar - FIXED: Full width on mobile */}
+              <div className="flex-1 w-full lg:w-auto relative">
+                <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Tìm kiếm bài học..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
                 />
               </div>
               
-              {/* Right: Add Lesson Button */}
-              <div className="flex items-center">
+              {/* Right: Add Lesson Button - FIXED: Full width on mobile */}
+              <div className="flex items-center w-full lg:w-auto">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="flex-shrink-0 px-5 py-3 rounded-xl bg-teal-500 text-white hover:bg-teal-600 transition-all shadow-sm hover:shadow-md flex items-center gap-2 font-semibold whitespace-nowrap"
+                  className="w-full lg:w-auto flex-shrink-0 px-4 sm:px-5 py-2.5 sm:py-3 text-sm sm:text-base rounded-xl bg-teal-500 text-white hover:bg-teal-600 transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 font-semibold whitespace-nowrap"
                 >
                   <span>Thêm bài học</span>
-                  <CirclePlus className="w-5 h-5" />
+                  <CirclePlus className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="mt-6 flex gap-2">
+            {/* Filter Tabs - FIXED: Scroll on mobile */}
+            <div className="mt-4 sm:mt-6 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setFilterType('all')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${
                   filterType === 'all'
                     ? 'bg-teal-50 text-teal-700 border-2 border-teal-500'
                     : 'bg-gray-50 text-gray-600 border-2 border-transparent hover:bg-gray-100'
@@ -119,48 +119,48 @@ function LessonsPageContent() {
               </button>
               <button
                 onClick={() => setFilterType('official')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex items-center gap-1.5 sm:gap-2 ${
                   filterType === 'official'
                     ? 'bg-teal-50 text-teal-700 border-2 border-teal-500'
                     : 'bg-gray-50 text-gray-600 border-2 border-transparent hover:bg-gray-100'
                 }`}
               >
-                <BookOpen className="w-4 h-4" />
+                <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Bài chính thức</span>
               </button>
               <button
                 onClick={() => setFilterType('user')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${
+                className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all flex items-center gap-1.5 sm:gap-2 ${
                   filterType === 'user'
                     ? 'bg-teal-50 text-teal-700 border-2 border-teal-500'
                     : 'bg-gray-50 text-gray-600 border-2 border-transparent hover:bg-gray-100'
                 }`}
               >
-                <UserRound className="w-4 h-4" />
+                <UserRound className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Bài của tôi</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-8 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {loading ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 text-sm sm:text-base">
               Đang tải bài học...
             </div>
           ) : filteredLessons.length === 0 ? (
             <div className="text-center py-12">
               {searchQuery || filterType !== 'all' ? (
                 <div>
-                  <p className="text-gray-500 mb-2">Không tìm thấy bài học nào</p>
-                  <p className="text-sm text-gray-400">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                  <p className="text-gray-500 mb-2 text-sm sm:text-base">Không tìm thấy bài học nào</p>
+                  <p className="text-xs sm:text-sm text-gray-400">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
                 </div>
               ) : (
-                <p className="text-gray-500">Chưa có bài học nào</p>
+                <p className="text-gray-500 text-sm sm:text-base">Chưa có bài học nào</p>
               )}
             </div>
           ) : (
-            <div className="flex flex-col gap-y-4">
+            <div className="flex flex-col gap-y-3 sm:gap-y-4">
               {filteredLessons.map((lesson, index) => (
                 <LessonCard
                   key={lesson.id}
