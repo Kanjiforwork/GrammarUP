@@ -71,6 +71,12 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
       return
     }
 
+    // ✅ Make additional requirements MANDATORY
+    if (!additionalRequirements.trim()) {
+      setError('Vui lòng nhập yêu cầu cụ thể để AI tạo bài tập chính xác hơn')
+      return
+    }
+
     if (mode === 'ai') {
       const hasSelectedType = Object.values(questionTypes).some(v => v)
       if (!hasSelectedType) {
@@ -120,7 +126,18 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Không thể tạo bài tập')
+        // ✅ Enhanced error display with reason and suggestion
+        let errorMessage = result.error || 'Không thể tạo bài tập'
+        
+        if (result.reason) {
+          errorMessage += '\n\n' + result.reason
+        }
+        
+        if (result.suggestion) {
+          errorMessage += '\n\n💡 Gợi ý: ' + result.suggestion
+        }
+        
+        throw new Error(errorMessage)
       }
 
       // Stage 2: Uploading to database (handled by API, but show for UX)
@@ -228,7 +245,7 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-xs sm:text-sm font-semibold text-red-900 mb-1">Có lỗi xảy ra</p>
-                <p className="text-xs sm:text-sm text-red-700">{error}</p>
+                <p className="text-xs sm:text-sm text-red-700 whitespace-pre-line">{error}</p>
               </div>
             </div>
           )}
@@ -270,7 +287,7 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
           {/* Additional Requirements */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-              Yêu cầu thêm
+              Yêu cầu cụ thể
             </label>
             <textarea
               value={additionalRequirements}

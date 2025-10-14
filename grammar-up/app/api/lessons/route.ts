@@ -101,6 +101,73 @@ export async function POST(request: NextRequest) {
 
     console.log('📝 Creating lesson with AI:', { lessonName, blockCount, difficulty })
 
+    // ✅ VALIDATION: Check if the request is clear and specific
+    console.log('🔍 Validating lesson request clarity...')
+    
+    const validationPrompt = `Bạn là chuyên gia đánh giá yêu cầu tạo bài học tiếng Anh. Hãy phân tích xem yêu cầu sau có ĐỦ RÕ RÀNG để tạo bài học không:
+
+📌 TÊN BÀI HỌC: "${lessonName}"
+📋 MÔ TẢ: "${lessonDescription}"
+📝 YÊU CẦU THÊM: "${additionalRequirements || 'Không có'}"
+
+Đánh giá theo các tiêu chí:
+1. Có đề cập rõ chủ đề ngữ pháp/kỹ năng không? (vd: "Present Simple", "Conditionals", "Past Tense")
+2. Mô tả có cụ thể, rõ ràng không? Hay quá mơ hồ, chung chung?
+3. Có phải là nonsense, vô nghĩa, hoặc không liên quan đến học tiếng Anh không?
+
+VÍ DỤ YÊU CẦU TỐT ✅:
+- Tên: "Present Simple - Thì hiện tại đơn" + Mô tả: "Học cách sử dụng thì hiện tại đơn để diễn tả các hành động thường xuyên"
+- Tên: "Conditional Type 0" + Mô tả: "Câu điều kiện loại 0 diễn tả sự thật hiển nhiên"
+- Tên: "Past Perfect Tense" + Mô tả: "Thì quá khứ hoàn thành và cách sử dụng"
+
+VÍ DỤ YÊU CẦU XẤU ❌:
+- "abc xyz" (nonsense)
+- "English" (quá chung chung)
+- "grammar" + "learn grammar" (không cụ thể)
+- "test lesson" + "test" (mơ hồ)
+- "123" (vô nghĩa)
+- "asdfgh" (nonsense)
+- "" + "" (trống rỗng)
+
+Trả về JSON:
+{
+  "isValid": true/false,
+  "reason": "Lý do ngắn gọn tại sao hợp lệ/không hợp lệ",
+  "suggestion": "Gợi ý cách cải thiện nếu không hợp lệ (hoặc null nếu hợp lệ)"
+}`
+
+    const validationCompletion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'Bạn là chuyên gia đánh giá yêu cầu. Hãy strict và chỉ chấp nhận yêu cầu rõ ràng, cụ thể về chủ đề tiếng Anh. Trả về JSON.'
+        },
+        {
+          role: 'user',
+          content: validationPrompt
+        }
+      ],
+      temperature: 0.3,
+      response_format: { type: 'json_object' }
+    })
+
+    const validationResult = JSON.parse(validationCompletion.choices[0].message.content || '{}')
+    
+    if (!validationResult.isValid) {
+      console.log('❌ Lesson request rejected:', validationResult.reason)
+      return NextResponse.json(
+        { 
+          error: '❌ Yêu cầu không đủ rõ ràng để tạo bài học',
+          reason: validationResult.reason,
+          suggestion: validationResult.suggestion || 'Vui lòng mô tả cụ thể chủ đề ngữ pháp hoặc kỹ năng bạn muốn học. Ví dụ: "Present Simple - Thì hiện tại đơn", "Conditional Type 0", "Past Perfect Tense"...'
+        },
+        { status: 400 }
+      )
+    }
+    
+    console.log('✅ Lesson request validated:', validationResult.reason)
+
     // Step 1: Generate lesson content using AI
     const prompt = `Bạn là một giáo viên tiếng Anh chuyên nghiệp. Tạo nội dung bài học "${lessonName}" với ${blockCount} blocks.
 

@@ -21,6 +21,7 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadingStage, setLoadingStage] = useState<'generating' | 'uploading' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [errorDetails, setErrorDetails] = useState<{ reason?: string; suggestion?: string } | null>(null)
   const [retryCount, setRetryCount] = useState(0)
   const [showRetryDialog, setShowRetryDialog] = useState(false)
   const [lastSubmitData, setLastSubmitData] = useState<any>(null)
@@ -46,6 +47,11 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
 
     if (!lessonDescription.trim()) {
       setError('Vui lòng nhập mô tả bài học')
+      return
+    }
+
+    if (!additionalRequirements.trim()) {
+      setError('Vui lòng nhập yêu cầu thêm cho bài học')
       return
     }
 
@@ -80,6 +86,10 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
       const result = await response.json()
 
       if (!response.ok) {
+        // Check if this is a validation error with details
+        if (result.reason || result.suggestion) {
+          setErrorDetails({ reason: result.reason, suggestion: result.suggestion })
+        }
         throw new Error(result.error || 'Không thể tạo bài học')
       }
 
@@ -189,11 +199,25 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
         <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           {/* Error Display */}
           {error && !showRetryDialog && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl flex items-start gap-2 sm:gap-3">
-              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-xs sm:text-sm font-semibold text-red-900 mb-1">Có lỗi xảy ra</p>
-                <p className="text-xs sm:text-sm text-red-700">{error}</p>
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-semibold text-red-900 mb-1">Có lỗi xảy ra</p>
+                  <p className="text-xs sm:text-sm text-red-700 mb-2">{error}</p>
+                  {errorDetails?.reason && (
+                    <div className="mt-2 pt-2 border-t border-red-200">
+                      <p className="text-xs font-medium text-red-800 mb-1">📌 Lý do:</p>
+                      <p className="text-xs text-red-700">{errorDetails.reason}</p>
+                    </div>
+                  )}
+                  {errorDetails?.suggestion && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs font-medium text-yellow-900 mb-1">💡 Gợi ý:</p>
+                      <p className="text-xs text-yellow-800">{errorDetails.suggestion}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -250,7 +274,7 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
           {/* Additional Requirements */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-              Yêu cầu thêm (tùy chọn)
+              Yêu cầu thêm (bắt buộc)
             </label>
             <textarea
               value={additionalRequirements}

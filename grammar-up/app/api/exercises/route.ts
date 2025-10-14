@@ -194,13 +194,87 @@ export async function POST(request: Request) {
         )
       }
 
-      // Build AI prompt
-      const prompt = `Bạn là một chuyên gia tạo đề thi tiếng Anh. Hãy tạo ${questionCount} câu hỏi cho bài tập "${exerciseName}".
+      // ✅ VALIDATION: Check if the request is clear and specific
+      console.log('🔍 Validating exercise request clarity...')
+      
+      const validationPrompt = `Bạn là chuyên gia đánh giá yêu cầu tạo bài tập tiếng Anh. Hãy phân tích xem yêu cầu sau có ĐỦ RÕ RÀNG để tạo bài tập không:
 
-Thông tin:
-- Độ khó: ${difficulty}
-- Loại câu hỏi: ${selectedTypes.join(', ')}
-- Yêu cầu thêm: ${additionalRequirements || 'Không có'}
+📌 TÊN BÀI TẬP: "${exerciseName}"
+📋 YÊU CẦU CỤ THỂ: "${additionalRequirements}"
+
+Đánh giá theo các tiêu chí:
+1. Có đề cập rõ chủ đề ngữ pháp/từ vựng không? (vd: "present simple", "conditionals", "vocabulary about work")
+2. Yêu cầu có cụ thể không? Hay quá mơ hồ, chung chung?
+3. Có phải là nonsense, vô nghĩa, hoặc không liên quan đến tiếng Anh không?
+
+VÍ DỤ YÊU CẦU TỐT ✅:
+- "Present Simple - Thì hiện tại đơn" + "Tập trung vào động từ thường, câu khẳng định và phủ định"
+- "Conditional Type 0" + "Về sự thật hiển nhiên, dùng if clause"
+- "Vocabulary about Daily Routine" + "Từ vựng về hoạt động hàng ngày"
+
+VÍ DỤ YÊU CẦU XẤU ❌:
+- "abc xyz" (nonsense)
+- "English" (quá chung chung)
+- "grammar" (không cụ thể)
+- "test" (mơ hồ)
+- "123 456" (vô nghĩa)
+- "" (trống rỗng)
+
+Trả về JSON:
+{
+  "isValid": true/false,
+  "reason": "Lý do ngắn gọn tại sao hợp lệ/không hợp lệ",
+  "suggestion": "Gợi ý cách cải thiện nếu không hợp lệ (hoặc null nếu hợp lệ)"
+}`
+
+      const validationCompletion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'Bạn là chuyên gia đánh giá yêu cầu. Hãy strict và chỉ chấp nhận yêu cầu rõ ràng, cụ thể. Trả về JSON.'
+          },
+          {
+            role: 'user',
+            content: validationPrompt
+          }
+        ],
+        temperature: 0.3,
+        response_format: { type: 'json_object' }
+      })
+
+      const validationResult = JSON.parse(validationCompletion.choices[0].message.content || '{}')
+      
+      if (!validationResult.isValid) {
+        console.log('❌ Exercise request rejected:', validationResult.reason)
+        return NextResponse.json(
+          { 
+            error: '❌ Yêu cầu không đủ rõ ràng để tạo bài tập',
+            reason: validationResult.reason,
+            suggestion: validationResult.suggestion || 'Vui lòng mô tả cụ thể chủ đề ngữ pháp hoặc từ vựng bạn muốn luyện tập. Ví dụ: "Present Simple", "Conditional Type 0", "Vocabulary about Work"...'
+          },
+          { status: 400 }
+        )
+      }
+      
+      console.log('✅ Exercise request validated:', validationResult.reason)
+
+      // Build AI prompt
+      const prompt = `Bạn là một chuyên gia tạo đề thi tiếng Anh. Hãy tạo ${questionCount} câu hỏi cho bài tập với thông tin sau:
+
+📌 TIÊU ĐỀ BÀI TẬP: "${exerciseName}"
+📋 YÊU CẦU CHI TIẾT: ${additionalRequirements}
+
+⚠️ QUAN TRỌNG:
+1. TẤT CẢ câu hỏi PHẢI liên quan TRỰC TIẾP đến tiêu đề "${exerciseName}"
+2. Nếu tiêu đề đề cập đến ngữ pháp cụ thể (vd: "if 0", "conditional 0", "present simple"), BẮT BUỘC phải tạo câu hỏi về chủ đề đó
+3. Tuân thủ CHÍNH XÁC yêu cầu chi tiết: "${additionalRequirements}"
+4. Không tạo câu hỏi về chủ đề khác nếu không được yêu cầu
+
+Ví dụ:
+- Nếu tiêu đề là "if 0" → Tạo câu hỏi về câu điều kiện loại 0 (if clause type 0)
+- Nếu tiêu đề là "Present Simple" → Tạo câu hỏi về thì hiện tại đơn
+- Nếu tiêu đề là "Past Perfect" → Tạo câu hỏi về thì quá khứ hoàn thành
 
 Phân bổ câu hỏi đều cho các loại đã chọn.
 
@@ -209,8 +283,8 @@ Phân bổ câu hỏi đều cho các loại đã chọn.
 MCQ (Multiple Choice):
 {
   "type": "MCQ",
-  "prompt": "Câu hỏi",
-  "concept": "present_simple_verb",
+  "prompt": "Câu hỏi liên quan đến ${exerciseName}",
+  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
   "level": "${difficulty}",
   "data": {
     "choices": ["lựa chọn 1", "lựa chọn 2", "lựa chọn 3", "lựa chọn 4"],
@@ -221,39 +295,39 @@ MCQ (Multiple Choice):
 CLOZE (Fill in the blank):
 {
   "type": "CLOZE",
-  "prompt": "Hoàn thành câu",
-  "concept": "present_simple_verb",
+  "prompt": "Hoàn thành câu về ${exerciseName}",
+  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
   "level": "${difficulty}",
   "data": {
-    "template": "I {{1}} to school every day.",
-    "answers": ["go"]
+    "template": "Câu có chỗ trống {{1}} liên quan ${exerciseName}",
+    "answers": ["đáp án"]
   }
 }
 
 ORDER (Word ordering):
 {
   "type": "ORDER",
-  "prompt": "Sắp xếp các từ theo đúng thứ tự",
-  "concept": "present_simple_word_order",
+  "prompt": "Sắp xếp các từ theo đúng thứ tự về ${exerciseName}",
+  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
   "level": "${difficulty}",
   "data": {
-    "tokens": ["I", "go", "to", "school"]
+    "tokens": ["các", "từ", "cần", "sắp", "xếp"]
   }
 }
 
 TRANSLATE (Translation):
 {
   "type": "TRANSLATE",
-  "prompt": "Dịch câu sau sang tiếng Anh",
-  "concept": "present_simple_translation",
+  "prompt": "Dịch câu sau sang tiếng Anh (sử dụng ${exerciseName})",
+  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
   "level": "${difficulty}",
   "data": {
-    "vietnameseText": "Tôi đi học mỗi ngày.",
-    "correctAnswer": "I go to school every day."
+    "vietnameseText": "Câu tiếng Việt liên quan đến ${exerciseName}",
+    "correctAnswer": "English translation"
   }
 }
 
-Trả về CHÍNH XÁC JSON array với ${questionCount} câu hỏi, không thêm text giải thích:
+Trả về CHÍNH XÁC JSON array với ${questionCount} câu hỏi về "${exerciseName}", không thêm text giải thích:
 { "questions": [...] }`
 
       const completion = await openai.chat.completions.create({
