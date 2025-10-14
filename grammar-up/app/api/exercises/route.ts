@@ -7,9 +7,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
-// ✅ Add cache configuration
-export const revalidate = 60 // Revalidate every 60 seconds
-export const dynamic = 'force-dynamic' // Always get fresh data for user-specific content
+// ✅ Remove cache configuration to show new content immediately
+export const dynamic = 'force-dynamic' // Always get fresh data
 
 export async function GET() {
   try {
@@ -239,7 +238,9 @@ export async function POST(request: Request) {
         
         // CLOZE (Điền từ):
         "template": "Câu có {{1}} chỗ trống về ${exerciseName}",
-        "answers": ["từ đúng"]
+        "answers": ["từ đúng"],
+        "options": ["từ đúng", "từ sai 1", "từ sai 2", "từ sai 3"], 
+        "correctIndex": 0
         
         // ORDER (Sắp xếp từ):
         "tokens": ["các", "từ", "cần", "sắp", "xếp", "về", "${exerciseName}"]
@@ -353,7 +354,9 @@ Hãy phân tích và chuyển đổi thành JSON:
         
         // CLOZE: template với {{1}} và danh sách từ có thể điền
         "template": "He {{1}} to school",
-        "possibleAnswers": ["goes", "go", "went"]
+        "possibleAnswers": ["goes", "go", "went"],
+        "options": ["goes", "go", "went", "runs"],
+        "correctIndex": 0
         
         // ORDER: danh sách các từ cần sắp xếp
         "tokens": ["I", "go", "to", "school"]
@@ -443,13 +446,13 @@ Think step by step and provide the grammatically correct answer.`
             answerPrompt = `You are an expert English grammar teacher.
 
 Template: ${q.rawData.template}
-Possible words to fill: ${q.rawData.possibleAnswers.join(', ')}
+Possible words to fill: ${q.rawData.options.join(', ')}
 
 Choose the grammatically CORRECT word/phrase.
 
 Return JSON:
 {
-  "correctAnswer": "goes",
+  "correctIndex": 0,
   "explanation": "Brief explanation (in Vietnamese)"
 }`
           } else if (q.type === 'ORDER') {
@@ -507,7 +510,9 @@ Return JSON:
           } else if (q.type === 'CLOZE') {
             finalData = {
               template: q.rawData.template,
-              answers: [answerResult.correctAnswer]
+              answers: [q.rawData.options[answerResult.correctIndex]],
+              options: q.rawData.options,
+              correctIndex: answerResult.correctIndex
             }
           } else if (q.type === 'ORDER') {
             finalData = {
@@ -578,8 +583,14 @@ Return JSON:
           }
           break
         case 'CLOZE':
-          if (!data.template || !data.answers || !Array.isArray(data.answers)) {
-            return { isValid: false, error: 'CLOZE cần có template và answers' }
+          if (!data.template) {
+            return { isValid: false, error: 'CLOZE cần có template' }
+          }
+          if (!data.options || !Array.isArray(data.options) || data.options.length < 2) {
+            return { isValid: false, error: 'CLOZE cần có ít nhất 2 lựa chọn' }
+          }
+          if (typeof data.correctIndex !== 'number' || data.correctIndex < 0 || data.correctIndex >= data.options.length) {
+            return { isValid: false, error: 'CLOZE cần có correctIndex hợp lệ' }
           }
           break
         case 'ORDER':

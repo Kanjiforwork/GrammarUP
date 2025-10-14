@@ -7,6 +7,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+// Remove cache configuration to show new content immediately
+export const dynamic = 'force-dynamic'
+
 // GET /api/lessons - Fetch all lessons
 export async function GET() {
   try {
@@ -37,6 +40,7 @@ export async function GET() {
       ]
     })
 
+    // Remove cache headers to ensure fresh data
     return NextResponse.json(lessons)
   } catch (error) {
     console.error('Error fetching lessons:', error)
