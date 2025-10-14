@@ -197,75 +197,24 @@ export async function POST(request: Request) {
       // ✅ REMOVED strict validation - let AI generate and let user judge quality
 
       // Build AI prompt
-      const prompt = `Bạn là một chuyên gia tạo đề thi tiếng Anh. Hãy tạo ${questionCount} câu hỏi cho bài tập với thông tin sau:
+      const prompt = `Bạn là chuyên gia tạo đề thi tiếng Anh. Hãy tạo ${questionCount} câu hỏi cho bài tập:
 
-📌 TIÊU ĐỀ BÀI TẬP: "${exerciseName}"
-📋 YÊU CẦU CHI TIẾT: ${additionalRequirements}
+📌 CHỦ ĐỀ: "${exerciseName}"
+📋 CHI TIẾT THÊM: ${additionalRequirements || 'Không có - bạn tự do sáng tạo!'}
 
-⚠️ QUAN TRỌNG:
-1. TẤT CẢ câu hỏi PHẢI liên quan TRỰC TIẾP đến tiêu đề "${exerciseName}"
-2. Nếu tiêu đề đề cập đến ngữ pháp cụ thể (vd: "if 0", "conditional 0", "present simple"), BẮT BUỘC phải tạo câu hỏi về chủ đề đó
-3. Tuân thủ CHÍNH XÁC yêu cầu chi tiết: "${additionalRequirements}"
-4. Không tạo câu hỏi về chủ đề khác nếu không được yêu cầu
+🎯 CÁCH TẠO CÂU HỎI:
+- User muốn luyện tập về "${exerciseName}"
+- Nếu user cho thêm chi tiết (vd: "tập trung vào cấu trúc if...then") → làm theo yêu cầu đó
+- Nếu user chỉ cho tiêu đề ngắn (vd: "if 0", "present simple") → bạn tự phát triển câu hỏi phù hợp
+- Tạo câu hỏi thực tế, đa dạng tình huống, giúp user luyện tập hiệu quả
 
-Ví dụ:
-- Nếu tiêu đề là "if 0" → Tạo câu hỏi về câu điều kiện loại 0 (if clause type 0)
-- Nếu tiêu đề là "Present Simple" → Tạo câu hỏi về thì hiện tại đơn
-- Nếu tiêu đề là "Past Perfect" → Tạo câu hỏi về thì quá khứ hoàn thành
+💡 VÍ DỤ CÁCH HIỂU CHỦ ĐỀ:
+- "if 0" hoặc "conditional 0" → Câu điều kiện loại 0
+- "Present Simple" → Thì hiện tại đơn
+- "Daily activities" → Hoạt động hàng ngày (tự chọn ngữ pháp phù hợp)
 
-Phân bổ câu hỏi đều cho các loại đã chọn.
-
-Định dạng JSON cho từng loại:
-
-MCQ (Multiple Choice):
-{
-  "type": "MCQ",
-  "prompt": "Câu hỏi liên quan đến ${exerciseName}",
-  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
-  "level": "${difficulty}",
-  "data": {
-    "choices": ["lựa chọn 1", "lựa chọn 2", "lựa chọn 3", "lựa chọn 4"],
-    "answerIndex": 0
-  }
-}
-
-CLOZE (Fill in the blank):
-{
-  "type": "CLOZE",
-  "prompt": "Hoàn thành câu về ${exerciseName}",
-  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
-  "level": "${difficulty}",
-  "data": {
-    "template": "Câu có chỗ trống {{1}} liên quan ${exerciseName}",
-    "answers": ["đáp án"]
-  }
-}
-
-ORDER (Word ordering):
-{
-  "type": "ORDER",
-  "prompt": "Sắp xếp các từ theo đúng thứ tự về ${exerciseName}",
-  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
-  "level": "${difficulty}",
-  "data": {
-    "tokens": ["các", "từ", "cần", "sắp", "xếp"]
-  }
-}
-
-TRANSLATE (Translation):
-{
-  "type": "TRANSLATE",
-  "prompt": "Dịch câu sau sang tiếng Anh (sử dụng ${exerciseName})",
-  "concept": "${exerciseName.toLowerCase().replace(/\s+/g, '_')}",
-  "level": "${difficulty}",
-  "data": {
-    "vietnameseText": "Câu tiếng Việt liên quan đến ${exerciseName}",
-    "correctAnswer": "English translation"
-  }
-}
-
-Trả về CHÍNH XÁC JSON array với ${questionCount} câu hỏi về "${exerciseName}", không thêm text giải thích:
-{ "questions": [...] }`
+// ...existing code...
+`
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',

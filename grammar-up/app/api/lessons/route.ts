@@ -104,120 +104,95 @@ export async function POST(request: NextRequest) {
     // ✅ REMOVED strict validation - let AI generate and let user judge quality
 
     // Step 1: Generate lesson content using AI
-    const prompt = `Bạn là một giáo viên tiếng Anh chuyên nghiệp. Tạo nội dung bài học "${lessonName}" với ${blockCount} blocks.
+    const prompt = `Bạn là chuyên gia tạo bài học tiếng Anh. Hãy tạo một bài học về:
 
-Thông tin:
-- Tên bài học: ${lessonName}
-- Mô tả: ${lessonDescription}
-- Độ khó: ${difficulty}
-- Yêu cầu thêm: ${additionalRequirements || 'Không có'}
+📌 CHỦ ĐỀ: "${lessonName}"
+📝 MÔ TẢ: "${lessonDescription}"
+📋 YÊU CẦU THÊM: ${additionalRequirements || 'Không có - bạn tự do sáng tạo!'}
 
-CẤU TRÚC BÀI HỌC (${blockCount} blocks):
+💡 HƯỚNG DẪN:
+- User muốn học về "${lessonName}"
+- Nếu user cho chi tiết → làm theo yêu cầu đó
+- Nếu user chỉ cho tiêu đề ngắn → bạn tự phát triển nội dung hữu ích
+- Tạo bài học thực tế, dễ hiểu, sinh động
 
-1. Block INTRO (order: 1):
-- title: Tiêu đề bài học (giữ nguyên "${lessonName}")
-- subtitle: Mô tả ngắn gọn (1 câu)
-- kahootHint: Gợi ý warm-up (ví dụ: "3 câu đúng/sai về...")
-- cta: "Bắt đầu học"
+📊 CẤU TRÚC BÀI HỌC:
+Bài học có ${blockCount || 4} blocks theo thứ tự:
 
-2. Block WHAT (order: 2):
-- heading: "Dùng để làm gì?"
-- content: Giải thích chi tiết công dụng/mục đích sử dụng (2-3 câu)
-- examples: Array gồm 2-3 ví dụ, mỗi example có format:
-  { en: "câu tiếng Anh", vi: "câu tiếng Việt" }
-- notes: Array gồm 1-2 lưu ý quan trọng
+1. **INTRO** (Giới thiệu):
+   - Chào mừng học viên
+   - Giải thích học viên sẽ học được gì
+   - Tạo động lực
 
-3. Block HOW (order: 3):
-- heading: "Cấu trúc và cách sử dụng"
-- content: Giải thích cấu trúc ngữ pháp với format rõ ràng (sử dụng \\n cho xuống dòng)
-  Ví dụ: "Khẳng định: S + V(s/es)\\nPhủ định: S + do/does + not + V\\nNghi vấn: Do/Does + S + V?"
-- notes: Array gồm 2-4 quy tắc/lưu ý ngữ pháp quan trọng
-- examples: Array gồm 2-3 ví dụ minh họa cấu trúc:
-  { en: "câu tiếng Anh", vi: "câu tiếng Việt" }
+2. **WHAT** (Lý thuyết):
+   - Giải thích kiến thức cốt lõi
+   - Ví dụ minh họa
+   - Cấu trúc/công thức (nếu có)
 
-4. Block REMIND (order: 4):
-- question: Câu hỏi ôn tập kiến thức vừa học (về cấu trúc hoặc cách dùng)
-- options: Array gồm 4 đáp án
-- answerIndex: Index của đáp án đúng (0-3)
-- explain: Giải thích tại sao đáp án đó đúng (2-3 câu)
+3. **HOW** (Thực hành):
+   - Hướng dẫn vận dụng
+   - Các bước thực hiện
+   - Tips & tricks
 
-5-${blockCount}. Các block MINIQUIZ (order: 5 đến ${blockCount}):
-Tạo ${blockCount - 4} câu hỏi trắc nghiệm để luyện tập, mỗi block có:
-- question: Câu hỏi cụ thể (điền từ, chọn đáp án đúng, tìm lỗi sai...)
-- options: Array gồm 4 đáp án
-- answerIndex: Index của đáp án đúng (0-3)
-- explain: Giải thích đáp án (1-2 câu)
+4. **REMIND** (Nhắc nhở):
+   - Tổng kết điểm quan trọng
+   - Lời khuyên cuối cùng
+   - Động viên
 
-Các câu hỏi MINIQUIZ phải:
-- Tăng dần độ khó
-- Đa dạng (câu khẳng định, phủ định, nghi vấn, lựa chọn từ đúng...)
-- Phù hợp độ khó ${difficulty}
-- Sát với nội dung đã dạy
-
-QUAN TRỌNG:
-- Nội dung phải cụ thể, chi tiết, không dùng placeholder
-- Ví dụ phải thực tế, dễ hiểu
-- Câu hỏi phải có giá trị luyện tập thực sự
-- Đáp án phải chính xác 100%
-
-Trả về CHÍNH XÁC JSON với cấu trúc:
+📄 ĐỊNH DẠNG JSON TRẢ VỀ:
 {
   "blocks": [
     {
       "type": "INTRO",
       "order": 1,
-      "data": { "title": "...", "subtitle": "...", "kahootHint": "...", "cta": "Bắt đầu học" }
+      "data": {
+        "title": "Welcome to...",
+        "content": "Detailed introduction text...",
+        "examples": []
+      }
     },
     {
       "type": "WHAT",
       "order": 2,
       "data": {
-        "heading": "Dùng để làm gì?",
-        "content": "...",
-        "examples": [{"en": "...", "vi": "..."}, ...],
-        "notes": ["...", "..."]
+        "title": "What is...",
+        "content": "Theory explanation...",
+        "examples": ["Example 1", "Example 2"]
       }
     },
     {
       "type": "HOW",
       "order": 3,
       "data": {
-        "heading": "Cấu trúc và cách sử dụng",
-        "content": "...",
-        "notes": ["...", "...", "..."],
-        "examples": [{"en": "...", "vi": "..."}, ...]
+        "title": "How to use...",
+        "content": "Step by step guide...",
+        "examples": ["Usage example 1"]
       }
     },
     {
       "type": "REMIND",
       "order": 4,
       "data": {
-        "question": "...",
-        "options": ["...", "...", "...", "..."],
-        "answerIndex": 0,
-        "explain": "..."
-      }
-    },
-    {
-      "type": "MINIQUIZ",
-      "order": 5,
-      "data": {
-        "question": "...",
-        "options": ["...", "...", "...", "..."],
-        "answerIndex": 0,
-        "explain": "..."
+        "title": "Remember",
+        "content": "Key takeaways...",
+        "examples": []
       }
     }
-    // ... more MINIQUIZ blocks
   ]
-}`
+}
+
+✨ LƯU Ý:
+- Nội dung bằng Tiếng Anh (hoặc theo ngôn ngữ user yêu cầu)
+- Dễ hiểu, thực tế, có giá trị học tập
+- Ví dụ cụ thể, không dùng placeholder
+- Chỉ trả về JSON, không giải thích thêm`
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: 'Bạn là giáo viên tiếng Anh chuyên nghiệp với kinh nghiệm soạn giáo án. Tạo nội dung bài học chi tiết, cụ thể, có giá trị giáo dục cao. Chỉ trả về JSON, không giải thích thêm.'
+          content: 'Bạn là giáo viên tiếng Anh chuyên nghiệp. Tạo nội dung bài học sinh động, dễ hiểu, có giá trị thực tế. Luôn tạo nội dung ngay cả khi yêu cầu đơn giản - hãy sáng tạo và phát triển thành bài học chất lượng. Chỉ trả về JSON.'
         },
         {
           role: 'user',
