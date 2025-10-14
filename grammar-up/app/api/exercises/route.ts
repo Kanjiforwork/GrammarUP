@@ -40,18 +40,27 @@ export async function GET() {
       orderBy: {
         sortOrder: 'asc',
       },
-      include: {
-        lesson: true,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        source: true,
+        createdAt: true,
+        lesson: {
+          select: {
+            title: true  // ✅ Chỉ lấy title, không load toàn bộ lesson
+          }
+        },
         _count: {
           select: {
             exerciseQuestions: true,
           },
         },
         exerciseQuestions: {
-          include: {
+          select: {
             question: {
               select: {
-                id: true
+                id: true  // ✅ Chỉ lấy ID để tính score
               }
             }
           }

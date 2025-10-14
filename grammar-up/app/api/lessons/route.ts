@@ -35,13 +35,18 @@ export async function GET() {
           { source: 'OFFICIAL' }    // Official lessons
         ]
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        source: true,
+        createdAt: true,
         unit: {
           select: {
             title: true
           }
         },
-        blocks: true,
+        // ✅ OPTIMIZATION: Không load blocks data (quá nặng!), chỉ count
         _count: {
           select: {
             blocks: true,
