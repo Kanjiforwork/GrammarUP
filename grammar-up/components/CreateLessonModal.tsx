@@ -274,7 +274,7 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
           {/* Additional Requirements */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2">
-              Yêu cầu thêm (bắt buộc)
+              Yêu cầu chi tiết (bắt buộc)
             </label>
             <textarea
               value={additionalRequirements}

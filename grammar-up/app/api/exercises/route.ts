@@ -513,8 +513,40 @@ Return JSON:
       )
     }
 
+    // ✅ Add type validation helper
+    function validateQuestionData(type: string, data: any): { isValid: boolean; error?: string } {
+      switch (type) {
+        case 'MCQ':
+          if (!data.choices || !Array.isArray(data.choices) || data.choices.length < 2) {
+            return { isValid: false, error: 'MCQ cần có ít nhất 2 lựa chọn' }
+          }
+          if (typeof data.answerIndex !== 'number' || data.answerIndex < 0 || data.answerIndex >= data.choices.length) {
+            return { isValid: false, error: 'MCQ cần có answerIndex hợp lệ' }
+          }
+          break
+        case 'CLOZE':
+          if (!data.template || !data.answers || !Array.isArray(data.answers)) {
+            return { isValid: false, error: 'CLOZE cần có template và answers' }
+          }
+          break
+        case 'ORDER':
+          if (!data.tokens || !Array.isArray(data.tokens) || data.tokens.length < 2) {
+            return { isValid: false, error: 'ORDER cần có ít nhất 2 từ' }
+          }
+          break
+        case 'TRANSLATE':
+          if (!data.vietnameseText || !data.correctAnswer) {
+            return { isValid: false, error: 'TRANSLATE cần có vietnameseText và correctAnswer' }
+          }
+          break
+        default:
+          return { isValid: false, error: `Loại câu hỏi không hỗ trợ: ${type}` }
+      }
+      return { isValid: true }
+    }
+
     // Step 3: Create exercise with questions in a single transaction
-    // ✅ OPTIMIZED: Use batch create to reduce transaction time
+    // ✅ FIXED: Proper validation and database creation
     const exercise = await prisma.$transaction(async (tx) => {
       // Create exercise WITH createdById
       const newExercise = await tx.exercise.create({
@@ -528,34 +560,41 @@ Return JSON:
         }
       })
 
-      // ✅ FIXED: Use createMany instead of createManyAndReturn for Vercel compatibility
-      const questionsToCreate = questionsData.map((qData, index) => ({
-        id: `${newExercise.id}_q${index + 1}_${Date.now()}`, // Generate unique IDs
-        type: qData.type,
-        prompt: qData.prompt,
-        concept: qData.concept || 'general',
-        level: qData.level || difficulty || 'A1',
-        lessonId: lessonId || null,
-        explain: qData.explain || null,
-        data: qData.data,
-        source: 'USER_CREATED' as const,
-        isPublic: false,
-        createdById: userId,
-      }))
+      // ✅ FIXED: Let Prisma generate IDs automatically and validate data
+      const questionsToCreate = questionsData.map((qData, index) => {
+        // Validate question data structure
+        const validation = validateQuestionData(qData.type, qData.data)
+        if (!validation.isValid) {
+          throw new Error(`Câu hỏi ${index + 1}: ${validation.error}`)
+        }
 
-      // Create all questions in batch
-      await tx.question.createMany({
-        data: questionsToCreate,
-        skipDuplicates: true
+        // Ensure valid enums
+        const questionType = ['MCQ', 'CLOZE', 'ORDER', 'TRANSLATE'].includes(qData.type) ? qData.type : 'MCQ'
+        const questionLevel = ['A1', 'A2', 'B1', 'B2'].includes(qData.level) ? qData.level : (difficulty || 'A1')
+
+        return {
+          // ✅ FIXED: Remove manual ID, let Prisma generate it
+          type: questionType as any, // Cast to enum
+          prompt: qData.prompt,
+          concept: qData.concept || 'general',
+          level: questionLevel as any, // Cast to enum  
+          lessonId: lessonId || null,
+          explain: qData.explain || null,
+          data: qData.data,
+          source: 'USER_CREATED' as const,
+          isPublic: false,
+          createdById: userId,
+        }
       })
 
-      // ✅ Fetch created questions to get their actual IDs
-      const createdQuestions = await tx.question.findMany({
-        where: {
-          id: { in: questionsToCreate.map(q => q.id) }
-        },
-        orderBy: { createdAt: 'asc' }
-      })
+      // ✅ FIXED: Use create instead of createMany to get IDs back
+      const createdQuestions = []
+      for (const questionData of questionsToCreate) {
+        const question = await tx.question.create({
+          data: questionData
+        })
+        createdQuestions.push(question)
+      }
 
       // ✅ OPTIMIZED: Batch create exercise-question relationships
       const exerciseQuestionData = createdQuestions.map((question, index) => ({

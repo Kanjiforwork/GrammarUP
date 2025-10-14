@@ -222,8 +222,27 @@ Bài học có ${blockCount || 4} blocks theo thứ tự:
       }
     }
 
+    // ✅ Add validation helper for lesson blocks
+    function validateLessonBlock(block: any, index: number): { isValid: boolean; error?: string } {
+      if (!block.type || !block.order || !block.data) {
+        return { isValid: false, error: `Block ${index + 1}: Thiếu type, order hoặc data` }
+      }
+    
+      const validTypes = ['INTRO', 'WHAT', 'HOW', 'NOTE', 'REMIND', 'MINIQUIZ']
+      if (!validTypes.includes(block.type)) {
+        return { isValid: false, error: `Block ${index + 1}: Loại "${block.type}" không hợp lệ` }
+      }
+    
+      // Validate data structure based on type
+      if (!block.data.title && !block.data.content) {
+        return { isValid: false, error: `Block ${index + 1}: Cần có title hoặc content` }
+      }
+    
+      return { isValid: true }
+    }
+
     // Step 3: Create lesson and blocks in database
-    // ✅ OPTIMIZED: Use shorter transaction with createMany
+    // ✅ OPTIMIZED: Use shorter transaction with proper validation
     const lesson = await prisma.$transaction(async (tx) => {
       // Get user from database
       const dbUser = await tx.user.findUnique({
@@ -262,16 +281,30 @@ Bài học có ${blockCount || 4} blocks theo thứ tự:
         }
       })
 
-      // ✅ OPTIMIZED: Use createMany instead of loop
-      const blockData = blocks.map((block: any) => ({
-        lessonId: newLesson.id,
-        type: block.type,
-        order: block.order,
-        data: block.data
-      }))
+      // ✅ FIXED: Validate blocks and ensure proper enum types
+      const validatedBlocks = blocks.map((block: any, index: number) => {
+        // Validate block structure
+        const validation = validateLessonBlock(block, index)
+        if (!validation.isValid) {
+          throw new Error(validation.error)
+        }
 
+        // Ensure valid enum type
+        const blockType = ['INTRO', 'WHAT', 'HOW', 'NOTE', 'REMIND', 'MINIQUIZ'].includes(block.type) 
+          ? block.type 
+          : 'WHAT'
+
+        return {
+          lessonId: newLesson.id,
+          type: blockType as any, // Cast to enum
+          order: block.order,
+          data: block.data
+        }
+      })
+
+      // ✅ OPTIMIZED: Use createMany for better performance
       await tx.lessonBlock.createMany({
-        data: blockData
+        data: validatedBlocks
       })
 
       return newLesson
