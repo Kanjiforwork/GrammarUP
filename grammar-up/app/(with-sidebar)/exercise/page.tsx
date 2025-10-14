@@ -1,6 +1,6 @@
 'use client'
 
-import { ExerciseCard } from '@/components/ExerciseCard'
+import { ExerciseCard, ExerciseCardSkeleton } from '@/components/ExerciseCard'
 import { CreateExerciseModal } from '@/components/CreateExerciseModal'
 import { AttemptHistoryModal } from '@/components/AttemptHistoryModal'
 import { ProtectedRoute } from '@/components/protected-route'
@@ -157,8 +157,11 @@ function ExercisePageContent() {
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {loading ? (
-            <div className="text-center py-12 text-gray-500 text-sm sm:text-base">
-              Đang tải bài tập...
+            // ✅ Show skeleton loading instead of plain text
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {[...Array(6)].map((_, index) => (
+                <ExerciseCardSkeleton key={index} />
+              ))}
             </div>
           ) : filteredExercises.length === 0 ? (
             <div className="text-center py-12">

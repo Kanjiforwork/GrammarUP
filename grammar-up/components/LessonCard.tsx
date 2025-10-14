@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
 import { useState } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface LessonCardProps {
   id: number
@@ -112,5 +113,31 @@ export function LessonCard({
         `}</style>
       </div>
     </Link>
+  )
+}
+
+// ✅ Add Skeleton Loading Component
+export function LessonCardSkeleton() {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+      <div className="p-6">
+        <div className="flex items-start gap-3 mb-3">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-6 w-3/4" />
+        </div>
+        <Skeleton className="h-4 w-full mb-2 ml-11" />
+        <Skeleton className="h-4 w-2/3 mb-4 ml-11" />
+        
+        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4 ml-11">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-32 ml-11" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+      </div>
+    </div>
   )
 }

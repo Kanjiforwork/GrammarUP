@@ -50,9 +50,11 @@ export function AppSidebar() {
       <SidebarContent className="pt-8">
         <SidebarGroup>
           {/* Logo with elegant typography - matching home */}
-          <SidebarGroupLabel className="mb-12 ml-4 text-3xl font-bold text-gray-900 tracking-tight">
-            Grammar<span className="text-teal-500">Up</span>
-          </SidebarGroupLabel>
+          <Link href="/" className="block mb-12 ml-4 cursor-pointer hover:opacity-80 transition-opacity">
+            <SidebarGroupLabel className="text-3xl font-bold text-gray-900 tracking-tight cursor-pointer">
+              Grammar<span className="text-teal-500">Up</span>
+            </SidebarGroupLabel>
+          </Link>
           
           <SidebarGroupContent className="px-4">
             <SidebarMenu className="space-y-2">

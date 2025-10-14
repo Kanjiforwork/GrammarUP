@@ -1,6 +1,6 @@
 'use client'
 
-import { LessonCard } from '@/components/LessonCard'
+import { LessonCard, LessonCardSkeleton } from '@/components/LessonCard'
 import { CreateLessonModal } from '@/components/CreateLessonModal'
 import { ProtectedRoute } from '@/components/protected-route'
 import { CirclePlus, Search, BookOpen, UserRound } from "lucide-react"
@@ -145,8 +145,11 @@ function LessonsPageContent() {
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {loading ? (
-            <div className="text-center py-12 text-gray-500 text-sm sm:text-base">
-              Đang tải bài học...
+            // ✅ Show skeleton loading instead of plain text
+            <div className="flex flex-col gap-y-3 sm:gap-y-4">
+              {[...Array(6)].map((_, index) => (
+                <LessonCardSkeleton key={index} />
+              ))}
             </div>
           ) : filteredLessons.length === 0 ? (
             <div className="text-center py-12">

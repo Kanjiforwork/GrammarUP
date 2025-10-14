@@ -7,6 +7,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+// ✅ Add cache configuration
+export const revalidate = 60 // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic' // Always get fresh data for user-specific content
+
 export async function GET() {
   try {
     console.log('🔍 Fetching exercises...')
@@ -29,12 +33,12 @@ export async function GET() {
 
     const userId = dbUser.id
 
-    // FILTER: Only get exercises created by this user OR official exercises
+    // ✅ OPTIMIZED: Select only necessary fields
     const exercises = await prisma.exercise.findMany({
       where: {
         OR: [
-          { createdById: userId }, // User's own exercises
-          { source: 'OFFICIAL' }    // Official exercises
+          { createdById: userId },
+          { source: 'OFFICIAL' }
         ]
       },
       orderBy: {
@@ -46,11 +50,6 @@ export async function GET() {
         description: true,
         source: true,
         createdAt: true,
-        lesson: {
-          select: {
-            title: true  // ✅ Chỉ lấy title, không load toàn bộ lesson
-          }
-        },
         _count: {
           select: {
             exerciseQuestions: true,
@@ -60,7 +59,7 @@ export async function GET() {
           select: {
             question: {
               select: {
-                id: true  // ✅ Chỉ lấy ID để tính score
+                id: true
               }
             }
           }
@@ -68,7 +67,7 @@ export async function GET() {
       },
     })
 
-    // ✅ OPTIMIZATION: Fetch ALL user attempts in ONE query
+    // ✅ OPTIMIZATION: Batch fetch all attempts in ONE query
     const allQuestionIds = exercises.flatMap(ex => 
       ex.exerciseQuestions.map(eq => eq.question.id)
     )
@@ -90,7 +89,7 @@ export async function GET() {
         })
       : []
 
-    // Group attempts by question for fast lookup
+    // Group attempts by question for O(1) lookup
     const attemptsByQuestion = new Map<string, typeof allAttempts>()
     for (const attempt of allAttempts) {
       if (!attemptsByQuestion.has(attempt.questionId)) {
@@ -99,23 +98,19 @@ export async function GET() {
       attemptsByQuestion.get(attempt.questionId)!.push(attempt)
     }
 
-    // ✅ OPTIMIZATION: Calculate scores without additional queries
+    // ✅ Calculate scores efficiently
     const exercisesWithScores = exercises.map((exercise) => {
       let latestScore = null
       
-      // Get all question IDs in this exercise
       const questionIds = exercise.exerciseQuestions.map(eq => eq.question.id)
       
       if (questionIds.length > 0) {
-        // Find latest attempt across all questions in this exercise
         const exerciseAttempts = questionIds
           .flatMap(qId => attemptsByQuestion.get(qId) || [])
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
 
         if (exerciseAttempts.length > 0) {
           const latestAttempt = exerciseAttempts[0]
-          
-          // Get all attempts from that session (within 1 hour window)
           const sessionStart = new Date(latestAttempt.createdAt.getTime() - 60 * 60 * 1000)
           const sessionEnd = new Date(latestAttempt.createdAt.getTime() + 60 * 60 * 1000)
           
@@ -123,17 +118,15 @@ export async function GET() {
             a.createdAt >= sessionStart && a.createdAt <= sessionEnd
           )
 
-          // Calculate score (count unique correct questions)
           const correctQuestions = new Set(
             sessionAttempts.filter(a => a.isCorrect).map(a => a.questionId)
           )
-          const totalQuestions = questionIds.length
           const score = correctQuestions.size
-          const percentage = Math.round((score / totalQuestions) * 100)
+          const percentage = Math.round((score / questionIds.length) * 100)
 
           latestScore = {
             score,
-            totalQuestions,
+            totalQuestions: questionIds.length,
             percentage,
             completedAt: latestAttempt.createdAt
           }
@@ -147,13 +140,15 @@ export async function GET() {
     })
 
     console.log('✅ Found exercises:', exercisesWithScores.length)
-    return NextResponse.json(exercisesWithScores)
+    
+    // ✅ Add cache headers
+    return NextResponse.json(exercisesWithScores, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      }
+    })
   } catch (error) {
     console.error('❌ Error fetching exercises:', error)
-    if (error instanceof Error) {
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
     return NextResponse.json({ error: 'Failed to fetch exercises' }, { status: 500 })
   }
 }

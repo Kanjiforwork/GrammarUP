@@ -7,6 +7,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+// ✅ Add cache configuration
+export const revalidate = 60 // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic' // Always get fresh data for user-specific content
+
 // GET /api/lessons - Fetch all lessons
 export async function GET() {
   try {
@@ -27,12 +31,12 @@ export async function GET() {
 
     const userId = dbUser.id
 
-    // ✅ FILTER: Only get lessons created by this user OR official lessons
+    // ✅ OPTIMIZED: Only select necessary fields, avoid loading heavy blocks data
     const lessons = await prisma.lesson.findMany({
       where: {
         OR: [
-          { createdById: userId },  // User's own lessons
-          { source: 'OFFICIAL' }    // Official lessons
+          { createdById: userId },
+          { source: 'OFFICIAL' }
         ]
       },
       select: {
@@ -46,7 +50,6 @@ export async function GET() {
             title: true
           }
         },
-        // ✅ OPTIMIZATION: Không load blocks data (quá nặng!), chỉ count
         _count: {
           select: {
             blocks: true,
@@ -60,7 +63,12 @@ export async function GET() {
       ]
     })
 
-    return NextResponse.json(lessons)
+    // ✅ Add cache headers for better performance
+    return NextResponse.json(lessons, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      }
+    })
   } catch (error) {
     console.error('Error fetching lessons:', error)
     return NextResponse.json(
