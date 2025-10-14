@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
+import { useState } from 'react'
 
 interface ExerciseCardProps {
   id: string
@@ -25,14 +26,30 @@ export function ExerciseCard({
   latestScore,
   index 
 }: ExerciseCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleClick = () => {
+    setIsLoading(true)
+  }
+
   return (
-    <Link href={`/exercise/${id}`}>
+    <Link href={`/exercise/${id}`} onClick={handleClick}>
       <div
         className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-teal-500 hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden"
         style={{
           animation: `fadeIn 0.3s ease-out ${index * 0.05}s both`
         }}
       >
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin" />
+              <p className="text-sm font-medium text-gray-700">Đang tải...</p>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-6">
           {/* Left Content */}
           <div className="flex-1">
@@ -82,7 +99,7 @@ export function ExerciseCard({
           </div>
         </div>
 
-        {/* Hover indicator - FIXED with overflow-hidden on parent */}
+        {/* Hover indicator */}
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
         {/* Keyframes */}

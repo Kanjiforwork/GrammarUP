@@ -60,6 +60,7 @@ export default function ExerciseClient({
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false)
   const [attempts, setAttempts] = useState<QuestionAttempt[]>([])
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now())
+  const [isLoading, setIsLoading] = useState(true)
   const { playSound } = useSound()
 
   // Shuffle questions on mount
@@ -67,6 +68,7 @@ export default function ExerciseClient({
     const shuffled = shuffleArray(questions)
     setAllQuestions(shuffled)
     setQuestionStartTime(Date.now())
+    setIsLoading(false)
   }, [questions])
 
   const currentQuestion = allQuestions[currentQuestionIndex]
@@ -138,6 +140,18 @@ export default function ExerciseClient({
 
   const handleCloseModal = () => {
     setIsCompletionModalOpen(false)
+  }
+
+  // Show loading screen
+  if (isLoading || allQuestions.length === 0) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin" />
+          <p className="text-sm font-medium text-gray-700">Đang tải bài tập...</p>
+        </div>
+      </div>
+    )
   }
 
   // Render appropriate component based on question type

@@ -13,7 +13,7 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
   const [lessonDescription, setLessonDescription] = useState('')
   const [additionalRequirements, setAdditionalRequirements] = useState('')
 
-  // AI mode states
+  // AI mode states - Mặc định tick hết 4 loại
   const [difficulty, setDifficulty] = useState<'A2' | 'B1' | 'B2' | 'C1'>('A2')
   const [blockCount, setBlockCount] = useState(8)
 
@@ -132,9 +132,9 @@ export function CreateLessonModal({ isOpen, onClose, onSuccess }: CreateLessonMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      {/* Retry Dialog */}
+      {/* Retry Dialog - z-[60] để stay on top */}
       {showRetryDialog && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />

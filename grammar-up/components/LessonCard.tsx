@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
+import { useState } from 'react'
 
 interface LessonCardProps {
   id: number
@@ -25,15 +26,30 @@ export function LessonCard({
   index 
 }: LessonCardProps) {
   const isCompleted = progress === 100
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleClick = () => {
+    setIsLoading(true)
+  }
   
   return (
-    <Link href={`/lesson/${lessonId}`}>
+    <Link href={`/lesson/${lessonId}`} onClick={handleClick}>
       <div
         className="group relative bg-white border border-gray-200 rounded-2xl p-6 hover:border-teal-500 hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden"
         style={{
           animation: `fadeIn 0.3s ease-out ${index * 0.05}s both`
         }}
       >
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-500 rounded-full animate-spin" />
+              <p className="text-sm font-medium text-gray-700">Đang tải...</p>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-6">
           {/* Left Content */}
           <div className="flex-1">
@@ -71,8 +87,6 @@ export function LessonCard({
 
           {/* Right Side - Progress & Button */}
           <div className="flex flex-col items-end gap-3 min-w-[120px]">
-
-            
             {/* Button */}
             <button className="px-6 py-2 bg-teal-500 text-white text-sm font-medium rounded-full hover:bg-teal-600 transition-colors">
               {isCompleted ? 'Ôn lại' : 'Bắt đầu'}

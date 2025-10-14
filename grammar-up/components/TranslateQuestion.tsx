@@ -28,36 +28,38 @@ export function TranslateQuestion({ prompt, vietnameseText, correctAnswer, onAns
     setIsCorrect(false)
   }, [vietnameseText])
 
+  const checkAnswer = async (answer: string) => {
+    setIsCheckingAnswer(true)
+    try {
+      const response = await fetch('/api/check-translation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vietnameseText,
+          userAnswer: answer
+        })
+      })
+
+      const data = await response.json()
+      setIsCorrect(data.isCorrect)
+      setHasChecked(true)
+      playSound(data.isCorrect ? 'correct' : 'incorrect')
+    } catch (error) {
+      console.error('Error checking translation:', error)
+      setIsCorrect(false)
+      setHasChecked(true)
+      playSound('incorrect')
+    } finally {
+      setIsCheckingAnswer(false)
+    }
+  }
+
   const handleCheck = async () => {
     if (!userAnswer.trim()) return
     
     if (!hasChecked) {
       // First click - Check answer with GPT
-      setIsCheckingAnswer(true)
-      
-      try {
-        const response = await fetch('/api/check-translation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            vietnameseText,
-            userAnswer: userAnswer.trim(),
-            suggestedAnswer: correctAnswer
-          })
-        })
-
-        const data = await response.json()
-        
-        setHasChecked(true)
-        setIsCorrect(data.isCorrect)
-        playSound(data.isCorrect ? 'correct' : 'incorrect')
-      } catch (error) {
-        console.error('Error checking translation:', error)
-        setHasChecked(true)
-        setIsCorrect(false)
-      } finally {
-        setIsCheckingAnswer(false)
-      }
+      await checkAnswer(userAnswer.trim())
     } else {
       // Second click - Continue to next question
       onAnswer(isCorrect)

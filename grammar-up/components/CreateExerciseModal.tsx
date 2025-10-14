@@ -13,13 +13,13 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
   const [additionalRequirements, setAdditionalRequirements] = useState('')
   const [mode, setMode] = useState<'ai' | 'manual'>('ai')
 
-  // AI mode states
-  const [difficulty, setDifficulty] = useState<'A2' | 'B1' | 'B2' | 'C1'>('A2')
+  // AI mode states - Mặc định tick hết 4 loại
+  const [difficulty, setDifficulty] = useState<'A1' | 'A2' | 'B1' | 'B2'>('A2')
   const [questionTypes, setQuestionTypes] = useState({
-    MCQ: false,
-    CLOZE: false,
-    ORDER: false,
-    TRANSLATE: false
+    MCQ: true,
+    CLOZE: true,
+    ORDER: true,
+    TRANSLATE: true
   })
   const [questionCount, setQuestionCount] = useState(10)
 
@@ -37,10 +37,21 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
   const MAX_RETRY_ATTEMPTS = 3
 
   const toggleQuestionType = (type: keyof typeof questionTypes) => {
-    setQuestionTypes(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }))
+    const newTypes = {
+      ...questionTypes,
+      [type]: !questionTypes[type]
+    }
+    
+    // Kiểm tra xem có ít nhất 1 loại được chọn không
+    const hasAtLeastOne = Object.values(newTypes).some(v => v)
+    
+    if (hasAtLeastOne) {
+      setQuestionTypes(newTypes)
+    } else {
+      // Không cho phép bỏ chọn hết tất cả
+      setError('Phải chọn ít nhất một loại câu hỏi')
+      setTimeout(() => setError(null), 2000)
+    }
   }
 
   const resetForm = () => {
@@ -163,7 +174,7 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       {/* Retry Dialog */}
       {showRetryDialog && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/30">
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-2xl shadow-2xl p-6 mx-4 max-w-md">
             <div className="flex items-center gap-3 mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />
@@ -310,7 +321,7 @@ export function CreateExerciseModal({ isOpen, onClose, onSuccess }: CreateExerci
                   Độ khó
                 </label>
                 <div className="grid grid-cols-4 gap-3">
-                  {(['A2', 'B1', 'B2', 'C1'] as const).map((level) => (
+                  {(['A1', 'A2', 'B1', 'B2'] as const).map((level) => (
                     <button
                       key={level}
                       onClick={() => setDifficulty(level)}
