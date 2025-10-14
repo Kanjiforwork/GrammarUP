@@ -18,7 +18,7 @@ export default async function Home() {
                 Grammar<span className="text-teal-500">Up</span>
               </h1>
               <div className="w-20 h-1 bg-gradient-to-r from-teal-500 to-teal-300 rounded-full mx-auto lg:mx-0" />
-              <p className="text-xl lg:text-2xl text-gray-700 leading-relaxed font-light max-w-xl mx-auto lg:mx-0">
+              <p className="text-xl font-semibold lg:text-2xl text-gray-700 leading-relaxed  max-w-xl mx-auto lg:mx-0">
                 Nâng cao ngữ pháp tiếng Anh của bạn với trải nghiệm học tập được cá nhân hóa bởi AI
               </p>
             </div>

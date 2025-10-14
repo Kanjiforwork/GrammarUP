@@ -13,16 +13,30 @@ export async function GET() {
     
     // Get current user
     const user = await getCurrentUser()
-    let userId: string | null = null
     
-    if (user) {
-      const dbUser = await prisma.user.findUnique({
-        where: { email: user.email }
-      })
-      userId = dbUser?.id || null
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user from database
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email }
+    })
+
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const userId = dbUser.id
+
+    // FILTER: Only get exercises created by this user OR official exercises
     const exercises = await prisma.exercise.findMany({
+      where: {
+        OR: [
+          { createdById: userId }, // User's own exercises
+          { source: 'OFFICIAL' }    // Official exercises
+        ]
+      },
       orderBy: {
         sortOrder: 'asc',
       },
@@ -41,63 +55,61 @@ export async function GET() {
       },
     })
 
-    // For each exercise, calculate latest score if user is logged in
+    // For each exercise, calculate latest score
     const exercisesWithScores = await Promise.all(exercises.map(async (exercise) => {
       let latestScore = null
       
-      if (userId) {
-        // Get all question IDs in this exercise
-        const questionIds = exercise.exerciseQuestions.map(eq => eq.question.id)
-        
-        if (questionIds.length > 0) {
-          // Get the latest attempt timestamp for this exercise
-          const latestAttempt = await prisma.attempt.findFirst({
+      // Get all question IDs in this exercise
+      const questionIds = exercise.exerciseQuestions.map(eq => eq.question.id)
+      
+      if (questionIds.length > 0) {
+        // Get the latest attempt timestamp for this exercise
+        const latestAttempt = await prisma.attempt.findFirst({
+          where: {
+            userId,
+            questionId: { in: questionIds }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          select: {
+            createdAt: true
+          }
+        })
+
+        if (latestAttempt) {
+          // Get all attempts from that session (within 1 hour window)
+          const sessionStart = new Date(latestAttempt.createdAt.getTime() - 60 * 60 * 1000)
+          const sessionEnd = new Date(latestAttempt.createdAt.getTime() + 60 * 60 * 1000)
+          
+          const sessionAttempts = await prisma.attempt.findMany({
             where: {
               userId,
-              questionId: { in: questionIds }
-            },
-            orderBy: {
-              createdAt: 'desc'
+              questionId: { in: questionIds },
+              createdAt: {
+                gte: sessionStart,
+                lte: sessionEnd
+              }
             },
             select: {
-              createdAt: true
+              isCorrect: true,
+              questionId: true
             }
           })
 
-          if (latestAttempt) {
-            // Get all attempts from that session (within 1 hour window)
-            const sessionStart = new Date(latestAttempt.createdAt.getTime() - 60 * 60 * 1000)
-            const sessionEnd = new Date(latestAttempt.createdAt.getTime() + 60 * 60 * 1000)
-            
-            const sessionAttempts = await prisma.attempt.findMany({
-              where: {
-                userId,
-                questionId: { in: questionIds },
-                createdAt: {
-                  gte: sessionStart,
-                  lte: sessionEnd
-                }
-              },
-              select: {
-                isCorrect: true,
-                questionId: true
-              }
-            })
+          // Calculate score (count unique correct questions)
+          const correctQuestions = new Set(
+            sessionAttempts.filter(a => a.isCorrect).map(a => a.questionId)
+          )
+          const totalQuestions = questionIds.length
+          const score = correctQuestions.size
+          const percentage = Math.round((score / totalQuestions) * 100)
 
-            // Calculate score (count unique correct questions)
-            const correctQuestions = new Set(
-              sessionAttempts.filter(a => a.isCorrect).map(a => a.questionId)
-            )
-            const totalQuestions = questionIds.length
-            const score = correctQuestions.size
-            const percentage = Math.round((score / totalQuestions) * 100)
-
-            latestScore = {
-              score,
-              totalQuestions,
-              percentage,
-              completedAt: latestAttempt.createdAt
-            }
+          latestScore = {
+            score,
+            totalQuestions,
+            percentage,
+            completedAt: latestAttempt.createdAt
           }
         }
       }
@@ -126,6 +138,24 @@ export async function POST(request: Request) {
     const { mode, exerciseName, additionalRequirements, difficulty, questionTypes, questionCount, manualContent, lessonId } = body
 
     console.log('📝 Creating exercise:', { mode, exerciseName })
+
+    // Get current user
+    const user = await getCurrentUser()
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user from database
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email }
+    })
+
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const userId = dbUser.id
 
     // Step 1: Generate questions using GPT-4o-mini
     let questionsData: any[] = []
@@ -504,7 +534,7 @@ Return JSON:
 
     // Step 3: Create exercise with questions in a single transaction
     const exercise = await prisma.$transaction(async (tx) => {
-      // Create exercise
+      // Create exercise WITH createdById
       const newExercise = await tx.exercise.create({
         data: {
           title: exerciseName,
@@ -512,6 +542,7 @@ Return JSON:
           lessonId: lessonId || null,
           source: 'USER_CREATED',
           isPublic: false,
+          createdById: userId, // ✅ LƯU USER ID
         }
       })
 
@@ -530,6 +561,7 @@ Return JSON:
             data: qData.data,
             source: 'USER_CREATED',
             isPublic: false,
+            createdById: userId, // ✅ LƯU USER ID cho questions
           }
         })
 
