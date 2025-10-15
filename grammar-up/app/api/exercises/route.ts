@@ -140,12 +140,8 @@ export async function GET() {
 
     console.log('✅ Found exercises:', exercisesWithScores.length)
     
-    // ✅ Add cache headers
-    return NextResponse.json(exercisesWithScores, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-      }
-    })
+    // ✅ Remove cache headers to ensure fresh data
+    return NextResponse.json(exercisesWithScores)
   } catch (error) {
     console.error('❌ Error fetching exercises:', error)
     return NextResponse.json({ error: 'Failed to fetch exercises' }, { status: 500 })
