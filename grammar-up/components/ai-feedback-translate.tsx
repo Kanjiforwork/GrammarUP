@@ -134,32 +134,32 @@ export function AIFeedback({ question, userAnswer, correctAnswer, questionType, 
   if (!show) return null
 
   return (
-    <div ref={divRef} className="mt-6 p-6 bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-2xl border-2 border-teal-200">
-      <div className="flex items-start gap-4">
+    <div ref={divRef} className="mt-6 p-4 bg-gradient-to-br from-teal-50 to-teal-100/50 rounded-2xl border-2 border-teal-200 md:p-6">
+      <div className="flex items-start gap-3 md:gap-4">
         {/* Dolphin Avatar */}
         <div className="flex-shrink-0">
           <Image
             src="/dolphin_avatar.png"
             alt="AI Tutor"
-            width={65}
-            height={65}
-            className="object-contain"
+            width={50}
+            height={50}
+            className="object-contain md:w-[65px] md:h-[65px]"
           />
         </div>
 
         {/* Feedback Content */}
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 md:text-lg">
             💡 Giải thích từ AI Tutor
           </h3>
           
           {loading ? (
             <div className="flex items-center gap-2 text-gray-600">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Đang phân tích câu trả lời của bạn...</span>
+              <span className="text-sm md:text-base">Đang phân tích câu trả lời của bạn...</span>
             </div>
           ) : (
-            <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-line text-sm md:text-base">
               {feedback}
             </div>
           )}

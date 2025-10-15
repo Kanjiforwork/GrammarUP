@@ -145,8 +145,8 @@ export function OrderQuestion({ prompt, tokens, onAnswer, onSkip }: OrderQuestio
             </div>
             
             {/* Speech bubble with question */}
-            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
-              <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
+            <div className="relative bg-white -ml-12 px-6 py-4 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200 md:px-8 md:py-6">
+              <p className="text-lg font-semibold text-gray-800 md:text-2xl">{prompt}</p>
               {/* Small triangle pointer */}
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>

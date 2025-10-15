@@ -69,15 +69,15 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
             </div>
             
             {/* Speech bubble with question */}
-            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
-              <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
+            <div className="relative bg-white -ml-12 px-6 py-4 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200 md:px-8 md:py-6">
+              <p className="text-lg font-semibold text-gray-800 md:text-2xl">{prompt}</p>
               {/* Small triangle pointer */}
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>
           </div>
           
           {/* Answer choices */}
-          <div className="space-y-3 max-w-2xl mx-auto w-full">
+          <div className="space-y-2 max-w-2xl mx-auto w-full md:space-y-3">
             {choices.map((choice, index) => {
               const isSelected = selectedIndex === index
               const isCorrect = index === answerIndex
@@ -117,12 +117,12 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
                   key={index}
                   onClick={() => handleSelect(index)}
                   disabled={hasChecked}
-                  className={`w-full p-5 rounded-2xl text-left text-lg transition-all border-2 ${borderColor} ${bgColor} ${textColor} ${
+                  className={`w-full p-3 rounded-2xl text-left text-base transition-all border-2 ${borderColor} ${bgColor} ${textColor} ${
                     hasChecked ? "cursor-not-allowed" : "cursor-pointer"
-                  } flex items-center gap-4 shadow-md hover:shadow-xl`}
+                  } flex items-center gap-3 shadow-md hover:shadow-xl md:p-5 md:text-lg md:gap-4`}
                 >
                   {/* Number badge */}
-                  <div className={`flex-shrink-0 w-12 h-12 ${badgeBgColor} ${badgeTextColor} rounded-xl flex items-center justify-center font-bold text-lg transition-colors`}>
+                  <div className={`flex-shrink-0 w-10 h-10 ${badgeBgColor} ${badgeTextColor} rounded-xl flex items-center justify-center font-bold text-base transition-colors md:w-12 md:h-12 md:text-lg`}>
                     {index + 1}
                   </div>
                   
@@ -133,11 +133,11 @@ export function MultipleChoice({ prompt, choices, answerIndex, onAnswer, onSkip 
                   {showResult && (
                     <div className="flex-shrink-0">
                       {isCorrect ? (
-                        <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-green-600 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       ) : (
-                        <svg className="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-red-600 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       )}

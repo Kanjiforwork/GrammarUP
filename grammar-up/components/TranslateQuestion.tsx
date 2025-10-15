@@ -92,19 +92,19 @@ export function TranslateQuestion({ prompt, vietnameseText, correctAnswer, onAns
             </div>
             
             {/* Speech bubble with question */}
-            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
-              <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
+            <div className="relative bg-white -ml-12 px-6 py-4 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200 md:px-8 md:py-6">
+              <p className="text-lg font-semibold text-gray-800 md:text-2xl">{prompt}</p>
               {/* Small triangle pointer */}
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>
           </div>
           
           {/* Vietnamese text to translate */}
-          <div className="max-w-3xl mx-auto w-full bg-teal-50 p-8 rounded-2xl shadow-md border border-teal-200 mb-6">
-            <p className="text-sm font-semibold text-teal-700 mb-3 uppercase tracking-wide">
+          <div className="max-w-3xl mx-auto w-full bg-teal-50 p-6 rounded-2xl shadow-md border border-teal-200 mb-6 md:p-8">
+            <p className="text-xs font-semibold text-teal-700 mb-2 uppercase tracking-wide md:text-sm md:mb-3">
               Câu tiếng Việt:
             </p>
-            <p className="text-2xl font-medium text-gray-900">{vietnameseText}</p>
+            <p className="text-lg font-medium text-gray-900 md:text-2xl">{vietnameseText}</p>
           </div>
 
           {/* Answer input area */}
@@ -123,11 +123,11 @@ export function TranslateQuestion({ prompt, vietnameseText, correctAnswer, onAns
               onChange={(e) => setUserAnswer(e.target.value)}
               disabled={hasChecked || isCheckingAnswer}
               placeholder="Nhập câu dịch tiếng Anh của bạn..."
-              className={`w-full p-4 text-lg rounded-xl border-2 resize-none transition-all ${
+              className={`w-full p-3 text-base rounded-xl border-2 resize-none transition-all ${
                 hasChecked || isCheckingAnswer
                   ? 'cursor-not-allowed bg-gray-50'
                   : 'border-gray-200 focus:border-teal-400 focus:ring-2 focus:ring-teal-100 focus:outline-none'
-              }`}
+              } md:p-4 md:text-lg`}
               rows={3}
             />
           </div>
@@ -135,9 +135,9 @@ export function TranslateQuestion({ prompt, vietnameseText, correctAnswer, onAns
           {/* Show correct answer if wrong */}
           {isWrong && (
             <>
-              <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
-                <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án gợi ý:</p>
-                <p className="text-xl text-blue-900 font-medium">{correctAnswer}</p>
+              <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm md:p-6">
+                <p className="text-xs font-semibold text-blue-700 mb-2 uppercase tracking-wide md:text-sm">Đáp án gợi ý:</p>
+                <p className="text-lg text-blue-900 font-medium md:text-xl">{correctAnswer}</p>
               </div>
               
               {/* AI Feedback */}

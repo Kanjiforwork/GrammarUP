@@ -130,7 +130,7 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
     const parts = template.split(/(\{\{\d+\}\})/)
     
     return (
-      <div className="text-2xl font-semibold text-gray-800 flex flex-wrap items-center gap-2">
+      <div className="text-lg font-semibold text-gray-800 flex flex-wrap items-center gap-1 md:text-2xl md:gap-2">
         {parts.map((part, index) => {
           const match = part.match(/\{\{(\d+)\}\}/)
           if (match) {
@@ -146,7 +146,7 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
                 key={index}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDropOnBlank(e, blankIndex)}
-                className={`inline-flex items-center justify-center min-w-[120px] px-4 py-2 border-2 rounded-xl transition-all font-medium ${
+                className={`inline-flex items-center justify-center min-w-[100px] px-3 py-1 border-2 rounded-xl transition-all font-medium text-sm ${
                   userAnswer
                     ? hasChecked
                       ? isCorrect
@@ -154,7 +154,7 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
                         : 'border-red-400 bg-red-50 text-red-700 cursor-not-allowed'
                       : 'border-teal-400 bg-teal-500 text-white cursor-move'
                     : 'border-dashed border-gray-300 bg-gray-50 text-gray-400'
-                } ${isDragging ? 'opacity-30' : 'opacity-100'}`}
+                } ${isDragging ? 'opacity-30' : 'opacity-100'} md:min-w-[120px] md:px-4 md:py-2 md:text-base`}
               >
                 {userAnswer ? (
                   <span
@@ -171,7 +171,7 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
               </div>
             )
           }
-          return <span key={index}>{part}</span>
+          return <span key={index} className="text-sm md:text-base">{part}</span>
         })}
       </div>
     )
@@ -200,8 +200,8 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
             </div>
             
             {/* Speech bubble with question */}
-            <div className="relative bg-white -ml-12 px-8 py-6 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200">
-              <p className="text-2xl font-semibold text-gray-800">{prompt}</p>
+            <div className="relative bg-white -ml-12 px-6 py-4 mt-10 rounded-3xl rounded-tl-none shadow-lg border-2 border-teal-200 md:px-8 md:py-6">
+              <p className="text-lg font-semibold text-gray-800 md:text-2xl">{prompt}</p>
               {/* Small triangle pointer */}
               <div className="absolute -left-2 top-6 w-4 h-4 bg-white border-l-2 border-t-2 border-teal-200 transform rotate-45"></div>
             </div>
@@ -228,7 +228,7 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
             onDrop={handleDropToAvailable}
           >
             <p className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Chọn từ:</p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               {availableTokens.length === 0 ? (
                 <p className="text-gray-400 italic">Tất cả từ đã được sử dụng</p>
               ) : (
@@ -242,11 +242,11 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
                       onDragStart={() => handleDragStart(token, 'available', index)}
                       onDragEnd={handleDragEnd}
                       onClick={() => handleTokenClick(token, true)}
-                      className={`px-5 py-3 rounded-xl font-medium text-lg transition-all shadow-sm ${
+                      className={`px-3 py-2 rounded-xl font-medium text-sm transition-all shadow-sm ${
                         hasChecked
                           ? 'cursor-not-allowed bg-gray-50 text-gray-400 border border-gray-200'
                           : 'bg-gray-50 text-gray-700 hover:bg-teal-50 hover:text-teal-700 hover:shadow-md cursor-move border border-gray-200 hover:border-teal-200'
-                      } ${isDragging ? 'opacity-30' : 'opacity-100'}`}
+                      } ${isDragging ? 'opacity-30' : 'opacity-100'} md:px-5 md:py-3 md:text-lg`}
                     >
                       {token}
                     </div>
@@ -259,9 +259,9 @@ export function ClozeQuestion({ prompt, template, answers, onAnswer, onSkip }: C
           {/* Show correct answer if wrong */}
           {hasWrongAnswer && (
             <>
-              <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm">
-                <p className="text-sm font-semibold text-blue-700 mb-2 uppercase tracking-wide">Đáp án đúng:</p>
-                <p className="text-xl text-blue-900 font-medium">{answers.join(', ')}</p>
+              <div className="max-w-3xl mx-auto w-full mt-6 bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm md:p-6">
+                <p className="text-xs font-semibold text-blue-700 mb-2 uppercase tracking-wide md:text-sm">Đáp án đúng:</p>
+                <p className="text-lg text-blue-900 font-medium md:text-xl">{answers.join(', ')}</p>
               </div>
               
               {/* AI Feedback */}
