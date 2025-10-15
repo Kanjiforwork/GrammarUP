@@ -19,7 +19,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user from database
+    const dbUser = await prisma.user.findUnique({
+      where: { email: user.email }
+    })
+
+    if (!dbUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    const userId = dbUser.id
+
+    // ✅ FIXED: Only fetch user's lessons + official lessons
     const lessons = await prisma.lesson.findMany({
+      where: {
+        OR: [
+          { createdById: userId }, // User's own lessons
+          { source: 'OFFICIAL' }   // Official lessons
+        ]
+      },
       include: {
         unit: {
           select: {
@@ -220,6 +238,15 @@ Trả về CHÍNH XÁC JSON với cấu trúc:
 
     // Step 3: Create lesson and blocks in database
     const lesson = await prisma.$transaction(async (tx) => {
+      // Get user from database
+      const dbUser = await tx.user.findUnique({
+        where: { email: user.email }
+      })
+
+      if (!dbUser) {
+        throw new Error('User not found')
+      }
+
       // Get or create unit
       let unit = await tx.unit.findFirst({
         where: { title: 'Generated Lessons' }
@@ -235,13 +262,16 @@ Trả về CHÍNH XÁC JSON với cấu trúc:
         })
       }
 
-      // Create lesson
+      // ✅ FIXED: Create lesson WITH createdById and source
       const newLesson = await tx.lesson.create({
         data: {
           title: lessonName.trim(),
           description: lessonDescription.trim(),
           unitId: unit.id,
-          sortOrder: 0
+          sortOrder: 0,
+          createdById: dbUser.id,
+          source: 'USER_CREATED',
+          isPublic: false
         }
       })
 
