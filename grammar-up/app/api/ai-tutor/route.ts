@@ -1,5 +1,7 @@
 import OpenAI from 'openai'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { aiTutorRateLimiter } from '@/lib/rate/rate_limit' // ← Import đơn giản
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -7,7 +9,44 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Bạn cần đăng nhập để sử dụng AI Tutor' },
+        { status: 401 }
+      )
+    }
+
+    console.log('✅ User authenticated:', user.id)
+
+    // Rate limiting - Đơn giản hơn với Upstash
+    const { success, limit, remaining, reset } = await aiTutorRateLimiter.limit(user.id)
+
+    if (!success) {
+      return NextResponse.json(
+        { 
+          error: 'Bạn đã hết lượt sử dụng AI Tutor miễn phí (3 lần/ngày).',
+          remaining: 0,
+          reset: Math.floor(reset / 1000), // reset là milliseconds
+        },
+        { status: 429 }
+      )
+    }
+
+    console.log('✅ Rate limit OK:', { remaining, limit })
+
     const { question, userAnswer, correctAnswer, questionType } = await request.json()
+
+    if (!question || !userAnswer || !correctAnswer || !questionType) {
+      return NextResponse.json(
+        { error: 'Thiếu thông tin câu hỏi' },
+        { status: 400 }
+      )
+    }
+
+    console.log('🤖 Calling OpenAI...')
 
     const prompt = `You are a friendly Gen Z English tutor. A student just answered an English question.
 
@@ -41,7 +80,7 @@ Length: Max 200 words, no numbered lists, not too academic
 Think step by step before responding.`
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // ← Upgraded to GPT-4o
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -58,9 +97,36 @@ Think step by step before responding.`
 
     const feedback = completion.choices[0].message.content
 
-    return NextResponse.json({ feedback })
-  } catch (error) {
-    console.error('AI Tutor Error:', error)
+    console.log('✅ OpenAI response received')
+    console.log('📤 Sending response:', {
+      hasFeeback: !!feedback,
+      remaining,
+      limit,
+      reset: Math.floor(reset / 1000)
+    })
+    return NextResponse.json({ 
+      feedback,
+      remaining, // ← Fix: bỏ - 1
+      limit,
+      reset: Math.floor(reset / 1000),
+    }, {
+      headers: {
+        'X-RateLimit-Limit': limit.toString(),
+        'X-RateLimit-Remaining': remaining.toString(),
+        'X-RateLimit-Reset': Math.floor(reset / 1000).toString(),
+      }
+    })
+
+  } catch (error: any) {
+    console.error('❌ AI Tutor Error:', error)
+    
+    if (error?.status === 429) {
+      return NextResponse.json(
+        { error: 'OpenAI API đang quá tải, vui lòng thử lại sau' },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Không thể tạo feedback từ AI tutor' },
       { status: 500 }
